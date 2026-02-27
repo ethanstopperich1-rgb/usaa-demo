@@ -6,21 +6,21 @@
     <title>USAA Member Travel Privileges — AI Agent Demo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=Lexend:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        navy: { DEFAULT: '#1a1a2e', deep: '#0f0f1e', light: '#252545', mid: '#1e1e38' },
-                        teal: { DEFAULT: '#0d7377', dark: '#095557', light: '#10959a' },
-                        gold: { DEFAULT: '#c4a35a', light: '#d4b87a', dark: '#a8893e' },
-                        cream: '#f5f5f5',
+                        navy: { DEFAULT: '#0F1526', deep: '#0A0E1A', light: '#1A2035', mid: '#141B2D' },
+                        teal: { DEFAULT: '#0d7377', dark: '#095557', light: '#10959a', glow: '#14b8b8' },
+                        gold: { DEFAULT: '#D4AF37', light: '#E4C55A', dark: '#B8962E', glow: '#F0D060', muted: '#8B7D3C' },
+                        warm: '#F8F7F5',
                     },
                     fontFamily: {
                         display: ['Newsreader', 'Georgia', 'serif'],
-                        body: ['Lexend', 'sans-serif'],
+                        body: ['DM Sans', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     }
                 }
@@ -28,279 +28,633 @@
         }
     </script>
     <style>
+        :root {
+            --gold: #D4AF37;
+            --gold-glow: #F0D060;
+            --teal: #0d7377;
+            --teal-glow: #14b8b8;
+            --void: #0A0E1A;
+            --navy: #0F1526;
+        }
+
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { overflow-x: hidden; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f0f1e; }
-        ::-webkit-scrollbar-thumb { background: #c4a35a; border-radius: 3px; }
-        .dot-grid { background-image: radial-gradient(circle at 1px 1px, rgba(196,163,90,0.04) 1px, transparent 0); background-size: 32px 32px; }
-        .gold-sep { height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(196,163,90,0.5) 50%, transparent 100%); }
-        .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
-        .reveal.visible { opacity: 1; transform: translateY(0); }
-        .reveal-delay-1 { transition-delay: 0.1s; }
-        .reveal-delay-2 { transition-delay: 0.2s; }
-        .reveal-delay-3 { transition-delay: 0.3s; }
-        .hero-gradient { background: linear-gradient(160deg, #0f0f1e 0%, #1a1a2e 40%, #151530 70%, #0f0f1e 100%); }
-        .nav-glass { background: rgba(15,15,30,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(196,163,90,0.1); }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
-        .float-anim { animation: float 2s ease-in-out infinite; }
-        @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.8); opacity: 0; } }
-        .pulse-ring { animation: pulse-ring 1.5s ease-out infinite; }
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
-        .metric-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-        .metric-fill { height: 100%; border-radius: 2px; transition: width 1.5s ease; width: 0; }
-        .video-modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; }
+        body { overflow-x: hidden; background: var(--void); }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--void); }
+        ::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.25); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(212,175,55,0.45); }
+
+        /* Noise grain overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            pointer-events: none;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 256px 256px;
+        }
+
+        /* Section backgrounds */
+        .section-dark {
+            background: linear-gradient(180deg, var(--void) 0%, var(--navy) 50%, var(--void) 100%);
+            position: relative;
+        }
+        .section-warm {
+            background: #F8F7F5;
+            position: relative;
+        }
+
+        /* Aurora hero */
+        .hero-aurora {
+            background: var(--void);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-aurora::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 25% 50%, rgba(13,115,119,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 70% at 75% 30%, rgba(212,175,55,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 50% 85%, rgba(13,115,119,0.08) 0%, transparent 60%);
+            animation: auroraShift 18s ease-in-out infinite alternate;
+            z-index: 1;
+        }
+        @keyframes auroraShift {
+            0% { opacity: 0.6; transform: scale(1) translateX(0); }
+            50% { opacity: 1; transform: scale(1.06) translateX(12px); }
+            100% { opacity: 0.7; transform: scale(0.97) translateX(-8px); }
+        }
+
+        /* Spotlight grid mask */
+        .animated-grid {
+            background-image:
+                linear-gradient(rgba(212,175,55,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212,175,55,0.03) 1px, transparent 1px);
+            background-size: 64px 64px;
+            mask-image: radial-gradient(ellipse 55% 45% at 50% 50%, black 15%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse 55% 45% at 50% 50%, black 15%, transparent 70%);
+        }
+
+        /* Floating orbs */
+        .orb { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; }
+        .orb-teal { background: radial-gradient(circle, var(--teal-glow), transparent 70%); animation: orbFloat1 22s ease-in-out infinite; }
+        .orb-gold { background: radial-gradient(circle, var(--gold-glow), transparent 70%); animation: orbFloat2 28s ease-in-out infinite; }
+        @keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1)} 25%{transform:translate(35px,-50px) scale(1.12)} 50%{transform:translate(-25px,25px) scale(.92)} 75%{transform:translate(45px,15px) scale(1.06)} }
+        @keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-45px,35px) scale(1.1)} 66%{transform:translate(30px,-40px) scale(.9)} }
+
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #fff 0%, #F0D060 35%, #14b8b8 65%, #fff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .gradient-text-gold {
+            background: linear-gradient(135deg, #fff 0%, var(--gold-glow) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        /* Nav */
+        .nav-glass {
+            background: rgba(10,14,26,0.7);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        .nav-glass.scrolled {
+            background: rgba(10,14,26,0.92);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .nav-link { position: relative; transition: color 0.3s ease; }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -4px; left: 50%; width: 0; height: 1.5px;
+            background: var(--gold); transition: width 0.3s ease, left 0.3s ease; border-radius: 1px;
+        }
+        .nav-link:hover::after { width: 100%; left: 0; }
+        .nav-dot {
+            width: 8px; height: 8px; border-radius: 50%; background: var(--gold);
+            box-shadow: 0 0 10px rgba(212,175,55,0.5); animation: navPulse 3s ease-in-out infinite;
+        }
+        @keyframes navPulse { 0%,100%{box-shadow:0 0 8px rgba(212,175,55,0.3)} 50%{box-shadow:0 0 18px rgba(212,175,55,0.6)} }
+
+        /* Glass card */
+        .glass-card {
+            background: rgba(20,27,45,0.5);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.06); border-radius: 20px;
+            position: relative; overflow: hidden;
+            transition: transform 0.5s cubic-bezier(.22,1,.36,1), border-color 0.4s ease, box-shadow 0.5s ease;
+        }
+        .glass-card::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07) 30%, rgba(255,255,255,0.07) 70%, transparent); z-index: 1;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px); border-color: rgba(255,255,255,0.1);
+            box-shadow: 0 25px 70px -15px rgba(0,0,0,0.6), 0 0 50px -10px rgba(212,175,55,0.05);
+        }
+
+        /* Animated border glow */
+        @property --border-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+        .glow-border { position: relative; z-index: 0; }
+        .glow-border::before {
+            content: ''; position: absolute; inset: -1px; border-radius: 21px;
+            background: conic-gradient(from var(--border-angle), transparent 0%, rgba(13,115,119,0.5) 8%, transparent 16%, transparent 50%, rgba(212,175,55,0.35) 58%, transparent 66%);
+            z-index: -1; opacity: 0; transition: opacity 0.6s ease; animation: borderSpin 4s linear infinite;
+        }
+        .glow-border:hover::before { opacity: 1; }
+        @keyframes borderSpin { to { --border-angle: 360deg; } }
+
+        /* Buttons */
+        .btn-shimmer { position: relative; overflow: hidden; }
+        .btn-shimmer::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmerSweep 3.5s ease-in-out infinite;
+        }
+        @keyframes shimmerSweep { 0%{left:-100%} 40%,100%{left:100%} }
+        .btn-glow-teal { transition: all 0.3s ease; }
+        .btn-glow-teal:hover { box-shadow: 0 0 30px rgba(13,115,119,0.35), 0 0 80px rgba(13,115,119,0.1); }
+        .btn-glow-gold { transition: all 0.3s ease; }
+        .btn-glow-gold:hover { box-shadow: 0 0 30px rgba(212,175,55,0.3), 0 0 80px rgba(212,175,55,0.08); }
+        .btn-glow-teal:active, .btn-glow-gold:active, .btn-shimmer:active { transform: scale(0.97); }
+
+        /* Scroll chevron bounce */
+        @keyframes chevronBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+        .chevron-bounce { animation: chevronBounce 2s ease-in-out infinite; }
+
+        /* Tabbed agent interface */
+        .agent-tab {
+            padding: 14px 28px; font-size: 14px; font-weight: 500; cursor: pointer;
+            color: rgba(255,255,255,0.35); border-bottom: 2px solid transparent;
+            transition: all 0.3s ease; white-space: nowrap;
+        }
+        .agent-tab:hover { color: rgba(255,255,255,0.6); }
+        .agent-tab.active { color: white; }
+        .agent-tab.active[data-agent="inbound"] { border-color: var(--teal); }
+        .agent-tab.active[data-agent="outbound"] { border-color: var(--gold); }
+        .agent-tab.active[data-agent="video"] { border-color: #e07c4f; }
+        .agent-panel { display: none; animation: panelFade 0.4s ease; }
+        .agent-panel.active { display: block; }
+        @keyframes panelFade { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+        /* Sound wave */
+        .sound-wave { display: flex; align-items: center; justify-content: center; gap: 3px; height: 48px; margin: 20px 0; }
+        .sound-wave span {
+            width: 3px; height: 8px; border-radius: 2px;
+            background: linear-gradient(to top, var(--teal), var(--teal-glow));
+            animation: soundBar 1.2s ease-in-out infinite; animation-delay: calc(var(--i) * 0.1s);
+        }
+        @keyframes soundBar { 0%,100%{height:8px;opacity:.35} 50%{height:calc(8px + var(--i) * 2.5px);opacity:1} }
+
+        /* Input styling */
+        .input-glass {
+            background: rgba(10,14,26,0.6); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 12px; padding: 16px 20px; color: white; font-size: 14px; width: 100%;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease; outline: none; font-family: 'DM Sans',sans-serif;
+        }
+        .input-glass:focus { border-color: rgba(212,175,55,0.35); box-shadow: 0 0 0 3px rgba(212,175,55,0.06); }
+        .input-glass::placeholder { color: rgba(255,255,255,0.15); }
+        .input-glass-teal:focus { border-color: rgba(13,115,119,0.4); box-shadow: 0 0 0 3px rgba(13,115,119,0.06); }
+
+        /* Gold sep */
+        .gold-sep { height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.05) 20%, rgba(212,175,55,0.3) 50%, rgba(212,175,55,0.05) 80%, transparent 100%); position: relative; }
+        .gold-sep::after { content: ''; position: absolute; top: -12px; left: 0; right: 0; height: 24px; background: linear-gradient(90deg, transparent, rgba(212,175,55,0.03) 50%, transparent); filter: blur(10px); pointer-events: none; }
+
+        /* Angled section divider */
+        .angle-top { clip-path: polygon(0 40px, 100% 0, 100% 100%, 0 100%); margin-top: -40px; padding-top: 80px; }
+        .angle-bottom { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), 0 100%); padding-bottom: 80px; }
+
+        /* Reveal animations */
+        .reveal {
+            opacity: 0; transform: translateY(36px) scale(0.98); filter: blur(3px);
+            transition: opacity 0.9s cubic-bezier(.22,1,.36,1), transform 0.9s cubic-bezier(.22,1,.36,1), filter 0.9s cubic-bezier(.22,1,.36,1);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        .reveal-delay-1 { transition-delay: .1s; }
+        .reveal-delay-2 { transition-delay: .2s; }
+        .reveal-delay-3 { transition-delay: .3s; }
+        .reveal-delay-4 { transition-delay: .4s; }
+
+        /* Callout */
+        .callout-glass { background: rgba(13,115,119,0.04); border-left: 2px solid var(--teal); border-radius: 16px; border-top: 1px solid rgba(255,255,255,0.03); border-right: 1px solid rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.03); }
+
+        /* Horizontal timeline */
+        .timeline-h { position: relative; }
+        .timeline-h::before {
+            content: ''; position: absolute; top: 24px; left: 48px; right: 48px; height: 2px;
+            background: linear-gradient(90deg, var(--teal), var(--gold), var(--teal)); opacity: 0.15;
+        }
+        @media (max-width: 768px) { .timeline-h::before { display: none; } }
+        .timeline-node {
+            width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: 700; position: relative; z-index: 1; flex-shrink: 0;
+        }
+
+        /* Metric counter */
+        .metric-counter { font-variant-numeric: tabular-nums; }
+
+        /* Video modal */
+        .video-modal { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; }
         .video-modal.open { display: flex; }
-        .video-modal iframe { width: 90vw; max-width: 900px; height: 80vh; border-radius: 16px; border: 1px solid rgba(196,163,90,0.2); }
+        .video-modal iframe { width: 90vw; max-width: 920px; height: 80vh; border-radius: 20px; border: 1px solid rgba(212,175,55,0.1); box-shadow: 0 50px 120px rgba(0,0,0,0.7); }
+
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+
+        /* How It Works step connector */
+        .step-connector { width: 60px; height: 2px; background: linear-gradient(90deg, var(--teal), var(--gold)); opacity: 0.2; flex-shrink: 0; }
+        @media (max-width: 768px) { .step-connector { width: 2px; height: 40px; } }
     </style>
 </head>
-<body class="font-body bg-cream text-navy antialiased">
+<body class="font-body text-white antialiased">
 
     <!-- NAV -->
-    <nav class="nav-glass fixed top-0 left-0 right-0 z-50">
+    <nav class="nav-glass fixed top-0 left-0 right-0 z-50" id="mainNav">
         <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
             <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full bg-gold"></div>
-                <span class="font-body font-semibold text-white text-sm tracking-wide">USAA AI Agent Demo</span>
+                <div class="nav-dot"></div>
+                <span class="font-body font-semibold text-white/90 text-sm tracking-wide">USAA AI Agent Demo</span>
             </div>
             <div class="hidden md:flex items-center gap-8">
-                <a href="#demo" class="text-white/50 hover:text-gold text-xs font-medium tracking-wide uppercase transition-colors">Try It</a>
-                <a href="#agents" class="text-white/50 hover:text-gold text-xs font-medium tracking-wide uppercase transition-colors">Agents</a>
-                <a href="#metrics" class="text-white/50 hover:text-gold text-xs font-medium tracking-wide uppercase transition-colors">Metrics</a>
+                <a href="#demo" class="nav-link text-white/35 hover:text-gold text-xs font-medium tracking-wide uppercase">Try It</a>
+                <a href="#agents" class="nav-link text-white/35 hover:text-gold text-xs font-medium tracking-wide uppercase">Agents</a>
+                <a href="#metrics" class="nav-link text-white/35 hover:text-gold text-xs font-medium tracking-wide uppercase">Metrics</a>
             </div>
         </div>
     </nav>
 
     <!-- HERO -->
-    <section class="hero-gradient dot-grid relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-full pointer-events-none">
-            <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-teal/5 blur-3xl"></div>
-            <div class="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-gold/5 blur-3xl"></div>
+    <section class="hero-aurora animated-grid relative min-h-[95vh] flex items-center justify-center">
+        <div class="absolute inset-0 pointer-events-none overflow-hidden" style="z-index:1">
+            <div class="orb orb-teal" style="width:550px;height:550px;top:5%;left:5%;opacity:.1"></div>
+            <div class="orb orb-gold" style="width:420px;height:420px;top:55%;right:0;opacity:.07"></div>
+            <div class="orb orb-teal" style="width:320px;height:320px;bottom:5%;left:35%;opacity:.06"></div>
         </div>
-        <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
-            <div class="inline-block mb-8 reveal">
-                <span class="badge border border-gold/30 text-gold/80 bg-gold/5">Confidential — Demo</span>
+
+        <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
+            <div class="inline-block mb-10 reveal">
+                <span class="badge border border-gold/20 text-gold/70 bg-gold/5 backdrop-blur-sm px-5 py-1.5 text-[11px]">Confidential — Demo</span>
             </div>
-            <h1 class="font-display text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-500 leading-[1.1] mb-6 reveal reveal-delay-1">USAA Member Travel<br>Privileges</h1>
-            <p class="font-display italic text-gold text-2xl sm:text-3xl md:text-4xl mb-8 reveal reveal-delay-2">AI Agent Demo</p>
-            <p class="text-white/60 text-base md:text-lg max-w-2xl mx-auto mb-10 leading-relaxed reveal reveal-delay-3">Three production-ready AI agents powering the complete member journey. Try them live below.</p>
-            <a href="#demo" class="inline-flex items-center gap-2 bg-gold text-navy-deep font-semibold text-sm px-8 py-4 rounded-full hover:bg-gold-light transition-colors reveal reveal-delay-3">
+            <h1 class="font-display gradient-text text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem] font-medium leading-[1.05] tracking-tight mb-8 reveal reveal-delay-1">USAA Member Travel<br>Privileges</h1>
+            <p class="font-body text-gold/50 text-sm sm:text-base tracking-[0.15em] uppercase mb-10 reveal reveal-delay-2">AI Agent Demo Experience</p>
+            <p class="text-white/40 text-base md:text-lg max-w-2xl mx-auto mb-14 leading-relaxed reveal reveal-delay-3">Three production-ready AI agents powering the complete member journey — from inbound support to proactive outreach to face-to-face video concierge.</p>
+            <a href="#demo" class="btn-shimmer inline-flex items-center gap-3 bg-gold text-navy-deep font-semibold text-sm px-10 py-4 rounded-full hover:bg-gold-light transition-colors reveal reveal-delay-3" style="box-shadow:0 0 30px rgba(212,175,55,0.25)">
                 Try the Agents
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="chevron-bounce"><polyline points="6 9 12 15 18 9"/></svg>
             </a>
-            <p class="text-gold/40 text-xs tracking-widest uppercase mt-8 reveal reveal-delay-3">Powered by Voxaris</p>
+            <p class="text-white/10 text-[10px] tracking-[0.3em] uppercase mt-16 reveal reveal-delay-4">Powered by Voxaris</p>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section-dark py-24">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-0 reveal">
+                <div class="text-center px-6">
+                    <div class="w-14 h-14 rounded-2xl bg-teal/8 border border-teal/10 flex items-center justify-center mx-auto mb-4">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal-glow)" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </div>
+                    <p class="text-white font-medium text-sm mb-1">Member Calls</p>
+                    <p class="text-white/25 text-xs">Inbound or outbound</p>
+                </div>
+                <div class="step-connector"></div>
+                <div class="text-center px-6">
+                    <div class="w-14 h-14 rounded-2xl bg-gold/6 border border-gold/10 flex items-center justify-center mx-auto mb-4">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold-glow)" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    </div>
+                    <p class="text-white font-medium text-sm mb-1">AI Agent Engages</p>
+                    <p class="text-white/25 text-xs">Voice, video, or both</p>
+                </div>
+                <div class="step-connector"></div>
+                <div class="text-center px-6">
+                    <div class="w-14 h-14 rounded-2xl bg-teal/8 border border-teal/10 flex items-center justify-center mx-auto mb-4">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--teal-glow)" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <p class="text-white font-medium text-sm mb-1">Resolution Delivered</p>
+                    <p class="text-white/25 text-xs">Booked, resolved, escalated</p>
+                </div>
+            </div>
         </div>
     </section>
 
     <div class="gold-sep"></div>
 
-    <!-- TRY THE AGENTS -->
-    <section id="demo" class="bg-navy dot-grid py-24 md:py-32">
-        <div class="max-w-6xl mx-auto px-6">
+    <!-- TRY THE AGENTS — TABBED INTERFACE -->
+    <section id="demo" class="section-dark py-32 md:py-40">
+        <div class="max-w-4xl mx-auto px-6">
             <div class="text-center mb-16 reveal">
-                <p class="text-gold text-xs font-semibold tracking-widest uppercase mb-4">Interactive Demo</p>
-                <h2 class="font-display text-white text-3xl md:text-5xl font-500 mb-4">Try the Agents</h2>
-                <p class="text-white/40 max-w-lg mx-auto">Click any agent below to start a live conversation. Use your microphone to talk naturally.</p>
+                <p class="text-gold/50 text-xs font-semibold tracking-[0.2em] uppercase mb-5">Interactive Demo</p>
+                <h2 class="font-body text-white text-3xl md:text-5xl font-bold tracking-tight mb-5">Try the Agents</h2>
+                <p class="text-white/30 max-w-md mx-auto text-sm">Select an agent and start a live conversation. Use your microphone to talk naturally.</p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-6">
-                <!-- Inbound -->
-                <div class="bg-navy-light/80 border border-white/5 rounded-2xl overflow-hidden reveal reveal-delay-1">
-                    <div class="p-8">
-                        <div class="flex items-start justify-between mb-6">
-                            <div class="w-12 h-12 rounded-xl bg-teal/15 flex items-center justify-center">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0d7377" stroke-width="2" stroke-linecap="round"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                            </div>
-                            <span class="badge bg-teal/15 text-teal-light text-[10px]">Inbound Voice</span>
-                        </div>
-                        <h3 class="text-white font-semibold text-xl mb-1">V·SENSE Inbound</h3>
-                        <p class="text-gold text-sm mb-4">Travel Support</p>
-                        <p class="text-white/40 text-sm leading-relaxed mb-8">Call in as a USAA member. Ask about certificates, book a cruise, or check a reservation.</p>
-                        <div id="inbound-idle">
-                            <button onclick="startRetellCall('inbound')" class="w-full flex items-center justify-center gap-3 bg-teal hover:bg-teal-light text-white font-semibold text-sm py-4 rounded-xl transition-colors cursor-pointer">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                                Start Call
-                            </button>
-                        </div>
-                        <div id="inbound-active" class="hidden">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="relative"><div class="w-3 h-3 rounded-full bg-green-400"></div><div class="absolute inset-0 w-3 h-3 rounded-full bg-green-400 pulse-ring"></div></div>
-                                    <span class="text-green-400 text-sm font-medium">Live</span>
+            <!-- Tab bar -->
+            <div class="flex justify-center border-b border-white/[0.06] mb-0 reveal reveal-delay-1 overflow-x-auto">
+                <button class="agent-tab active" data-agent="inbound" onclick="switchTab('inbound')">
+                    <span class="flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        Inbound Voice
+                    </span>
+                </button>
+                <button class="agent-tab" data-agent="outbound" onclick="switchTab('outbound')">
+                    <span class="flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="16 2 22 2 22 8"/><line x1="15" y1="9" x2="22" y2="2"/></svg>
+                        Outbound Voice
+                    </span>
+                </button>
+                <button class="agent-tab" data-agent="video" onclick="switchTab('video')">
+                    <span class="flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        Video Concierge
+                    </span>
+                </button>
+            </div>
+
+            <!-- Tab panels -->
+            <div class="reveal reveal-delay-2">
+                <!-- Inbound Panel -->
+                <div class="agent-panel active" id="panel-inbound">
+                    <div class="glass-card glow-border" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none">
+                        <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-teal to-transparent opacity-40"></div>
+                        <div class="p-10 md:p-12">
+                            <div class="grid md:grid-cols-2 gap-10 items-start">
+                                <div>
+                                    <span class="badge bg-teal/10 text-teal-glow border border-teal/10 mb-5">Inbound Voice</span>
+                                    <h3 class="text-white font-bold text-2xl mb-2 mt-4">V·SENSE Inbound</h3>
+                                    <p class="text-gold/50 text-sm mb-5">Member Travel Support</p>
+                                    <p class="text-white/35 text-sm leading-relaxed mb-6">Call in as a USAA member. Ask about your travel certificates, book a cruise, check reservation status, or request changes to an existing itinerary.</p>
+                                    <div class="bg-white/[0.02] rounded-xl p-4 border border-white/[0.04]">
+                                        <p class="text-white/20 text-[11px] uppercase tracking-wider mb-2">Try asking</p>
+                                        <p class="text-white/45 text-sm italic">"I have a cruise certificate expiring next month — what are my options?"</p>
+                                    </div>
                                 </div>
-                                <span class="text-white/40 text-sm font-mono" id="inbound-timer">0:00</span>
-                            </div>
-                            <button onclick="endRetellCall('inbound')" class="w-full flex items-center justify-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold text-sm py-4 rounded-xl transition-colors border border-red-500/20 cursor-pointer">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
-                                End Call
-                            </button>
-                        </div>
-                        <div id="inbound-connecting" class="hidden">
-                            <div class="flex items-center justify-center gap-3 py-4 text-white/50 text-sm">
-                                <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                                Connecting...
+                                <div>
+                                    <div id="inbound-idle">
+                                        <button onclick="startRetellCall('inbound')" class="btn-glow-teal w-full flex items-center justify-center gap-3 bg-teal text-white font-semibold text-sm py-[14px] rounded-xl cursor-pointer" style="height:52px">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                            Start Call
+                                        </button>
+                                    </div>
+                                    <div id="inbound-active" class="hidden">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="relative"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div><div class="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-50"></div></div>
+                                                <span class="text-emerald-400 text-sm font-medium">Live</span>
+                                            </div>
+                                            <span class="text-white/30 text-sm font-mono" id="inbound-timer">0:00</span>
+                                        </div>
+                                        <div class="sound-wave"><span style="--i:1"></span><span style="--i:2"></span><span style="--i:3"></span><span style="--i:4"></span><span style="--i:5"></span><span style="--i:6"></span><span style="--i:7"></span><span style="--i:8"></span><span style="--i:9"></span><span style="--i:10"></span><span style="--i:11"></span><span style="--i:12"></span></div>
+                                        <button onclick="endRetellCall('inbound')" class="w-full flex items-center justify-center gap-2 bg-red-500/15 hover:bg-red-500/25 text-red-400 font-semibold text-sm py-4 rounded-xl transition-colors border border-red-500/15 cursor-pointer" style="height:52px">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+                                            End Call
+                                        </button>
+                                    </div>
+                                    <div id="inbound-connecting" class="hidden">
+                                        <div class="flex items-center justify-center gap-3 py-6 text-white/40 text-sm">
+                                            <svg class="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                            Connecting...
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Outbound -->
-                <div class="bg-navy-light/80 border border-white/5 rounded-2xl overflow-hidden reveal reveal-delay-2">
-                    <div class="p-8">
-                        <div class="flex items-start justify-between mb-6">
-                            <div class="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c4a35a" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="16 2 22 2 22 8"/><line x1="15" y1="9" x2="22" y2="2"/></svg>
-                            </div>
-                            <span class="badge bg-gold/10 text-gold text-[10px]">Outbound Voice</span>
-                        </div>
-                        <h3 class="text-white font-semibold text-xl mb-1">V·SENSE Outbound</h3>
-                        <p class="text-gold text-sm mb-4">Certificate Redemption</p>
-                        <p class="text-white/40 text-sm leading-relaxed mb-6">Experience the outbound call flow. The agent will pitch an expiring cruise certificate.</p>
-                        <div id="outbound-idle">
-                            <div class="mb-4">
-                                <label class="text-white/30 text-xs uppercase tracking-wider block mb-2">Your Name</label>
-                                <input type="text" id="outbound-name" placeholder="e.g. Sarah Johnson" class="w-full bg-navy-deep/80 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-gold/40 transition-colors">
-                            </div>
-                            <button onclick="startRetellCall('outbound')" class="w-full flex items-center justify-center gap-3 bg-gold/20 hover:bg-gold/30 text-gold font-semibold text-sm py-4 rounded-xl transition-colors border border-gold/20 cursor-pointer">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                                Start Call
-                            </button>
-                        </div>
-                        <div id="outbound-active" class="hidden">
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="relative"><div class="w-3 h-3 rounded-full bg-green-400"></div><div class="absolute inset-0 w-3 h-3 rounded-full bg-green-400 pulse-ring"></div></div>
-                                    <span class="text-green-400 text-sm font-medium">Live</span>
+                <!-- Outbound Panel -->
+                <div class="agent-panel" id="panel-outbound">
+                    <div class="glass-card glow-border" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none">
+                        <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-40"></div>
+                        <div class="p-10 md:p-12">
+                            <div class="grid md:grid-cols-2 gap-10 items-start">
+                                <div>
+                                    <span class="badge bg-gold/8 text-gold border border-gold/10 mb-5">Outbound Voice</span>
+                                    <h3 class="text-white font-bold text-2xl mb-2 mt-4">V·SENSE Outbound</h3>
+                                    <p class="text-gold/50 text-sm mb-5">Certificate Redemption Outreach</p>
+                                    <p class="text-white/35 text-sm leading-relaxed mb-6">Experience the proactive outbound call flow. The agent reaches out about an expiring cruise certificate and guides you through redemption options.</p>
+                                    <div class="bg-white/[0.02] rounded-xl p-4 border border-white/[0.04]">
+                                        <p class="text-white/20 text-[11px] uppercase tracking-wider mb-2">What to expect</p>
+                                        <p class="text-white/45 text-sm italic">"Hi Sarah, I'm calling from USAA about your $2,400 cruise certificate expiring April 30th..."</p>
+                                    </div>
                                 </div>
-                                <span class="text-white/40 text-sm font-mono" id="outbound-timer">0:00</span>
-                            </div>
-                            <button onclick="endRetellCall('outbound')" class="w-full flex items-center justify-center gap-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold text-sm py-4 rounded-xl transition-colors border border-red-500/20 cursor-pointer">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
-                                End Call
-                            </button>
-                        </div>
-                        <div id="outbound-connecting" class="hidden">
-                            <div class="flex items-center justify-center gap-3 py-4 text-white/50 text-sm">
-                                <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                                Connecting...
+                                <div>
+                                    <div id="outbound-idle">
+                                        <div class="mb-5">
+                                            <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-2">Your Name</label>
+                                            <input type="text" id="outbound-name" placeholder="e.g. Sarah Johnson" class="input-glass">
+                                        </div>
+                                        <button onclick="startRetellCall('outbound')" class="btn-glow-gold w-full flex items-center justify-center gap-3 bg-gold/15 hover:bg-gold/25 text-gold font-semibold text-sm py-[14px] rounded-xl transition-colors border border-gold/15 cursor-pointer" style="height:52px">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                            Start Call
+                                        </button>
+                                    </div>
+                                    <div id="outbound-active" class="hidden">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center gap-3">
+                                                <div class="relative"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div><div class="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-50"></div></div>
+                                                <span class="text-emerald-400 text-sm font-medium">Live</span>
+                                            </div>
+                                            <span class="text-white/30 text-sm font-mono" id="outbound-timer">0:00</span>
+                                        </div>
+                                        <div class="sound-wave"><span style="--i:1"></span><span style="--i:2"></span><span style="--i:3"></span><span style="--i:4"></span><span style="--i:5"></span><span style="--i:6"></span><span style="--i:7"></span><span style="--i:8"></span><span style="--i:9"></span><span style="--i:10"></span><span style="--i:11"></span><span style="--i:12"></span></div>
+                                        <button onclick="endRetellCall('outbound')" class="w-full flex items-center justify-center gap-2 bg-red-500/15 hover:bg-red-500/25 text-red-400 font-semibold text-sm py-4 rounded-xl transition-colors border border-red-500/15 cursor-pointer" style="height:52px">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
+                                            End Call
+                                        </button>
+                                    </div>
+                                    <div id="outbound-connecting" class="hidden">
+                                        <div class="flex items-center justify-center gap-3 py-6 text-white/40 text-sm">
+                                            <svg class="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                            Connecting...
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Video -->
-                <div class="bg-navy-light/80 border border-white/5 rounded-2xl overflow-hidden reveal reveal-delay-3">
-                    <div class="p-8">
-                        <div class="flex items-start justify-between mb-6">
-                            <div class="w-12 h-12 rounded-xl bg-teal/15 flex items-center justify-center">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0d7377" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                            </div>
-                            <span class="badge bg-teal/15 text-teal-light text-[10px]">Video Agent</span>
-                        </div>
-                        <h3 class="text-white font-semibold text-xl mb-1">V·FACE</h3>
-                        <p class="text-gold text-sm mb-4">Video Concierge</p>
-                        <p class="text-white/40 text-sm leading-relaxed mb-6">Meet the video concierge face-to-face. Browse destinations, get recommendations, redeem certificates.</p>
-                        <div id="video-idle">
-                            <div class="space-y-3 mb-4">
+                <!-- Video Panel -->
+                <div class="agent-panel" id="panel-video">
+                    <div class="glass-card glow-border" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none">
+                        <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#e07c4f] to-transparent opacity-40"></div>
+                        <div class="p-10 md:p-12">
+                            <div class="grid md:grid-cols-2 gap-10 items-start">
                                 <div>
-                                    <label class="text-white/30 text-xs uppercase tracking-wider block mb-2">Your Name</label>
-                                    <input type="text" id="video-name" placeholder="e.g. Sarah Johnson" class="w-full bg-navy-deep/80 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-teal/40 transition-colors">
+                                    <span class="badge bg-[#e07c4f]/10 text-[#e07c4f] border border-[#e07c4f]/10 mb-5">Video Agent</span>
+                                    <h3 class="text-white font-bold text-2xl mb-2 mt-4">V·FACE</h3>
+                                    <p class="text-gold/50 text-sm mb-5">Video Concierge</p>
+                                    <p class="text-white/35 text-sm leading-relaxed mb-6">Meet the AI travel concierge face-to-face. Browse Caribbean destinations, get personalized recommendations, and redeem your cruise certificate — all in a live video conversation.</p>
+                                    <div class="bg-white/[0.02] rounded-xl p-4 border border-white/[0.04]">
+                                        <p class="text-white/20 text-[11px] uppercase tracking-wider mb-2">Try asking</p>
+                                        <p class="text-white/45 text-sm italic">"Show me the best Caribbean cruise options for a couple in early spring."</p>
+                                    </div>
                                 </div>
                                 <div>
-                                    <label class="text-white/30 text-xs uppercase tracking-wider block mb-2">What brings you in?</label>
-                                    <input type="text" id="video-reason" placeholder="e.g. I want to use my cruise certificate" class="w-full bg-navy-deep/80 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-teal/40 transition-colors">
+                                    <div id="video-idle">
+                                        <div class="space-y-4 mb-5">
+                                            <div>
+                                                <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-2">Your Name</label>
+                                                <input type="text" id="video-name" placeholder="e.g. Sarah Johnson" class="input-glass input-glass-teal">
+                                            </div>
+                                            <div>
+                                                <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-2">What brings you in?</label>
+                                                <input type="text" id="video-reason" placeholder="e.g. I want to use my cruise certificate" class="input-glass input-glass-teal">
+                                            </div>
+                                        </div>
+                                        <button onclick="startVideoSession()" class="btn-glow-teal w-full flex items-center justify-center gap-3 bg-teal text-white font-semibold text-sm py-[14px] rounded-xl cursor-pointer" style="height:52px">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                                            Start Video
+                                        </button>
+                                    </div>
+                                    <div id="video-connecting" class="hidden">
+                                        <div class="flex items-center justify-center gap-3 py-6 text-white/40 text-sm">
+                                            <svg class="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                            Starting session...
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <button onclick="startVideoSession()" class="w-full flex items-center justify-center gap-3 bg-teal hover:bg-teal-light text-white font-semibold text-sm py-4 rounded-xl transition-colors cursor-pointer">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                                Start Video
-                            </button>
-                        </div>
-                        <div id="video-connecting" class="hidden">
-                            <div class="flex items-center justify-center gap-3 py-4 text-white/50 text-sm">
-                                <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                                Starting session...
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <p class="text-center text-white/20 text-xs mt-8">Requires microphone access. Best on desktop Chrome or Safari.</p>
+
+            <p class="text-center text-white/12 text-xs mt-10">Requires microphone access. Best on desktop Chrome or Safari.</p>
         </div>
     </section>
 
     <!-- Video Modal -->
     <div class="video-modal" id="videoModal">
         <div class="relative">
-            <button onclick="closeVideoModal()" class="absolute -top-12 right-0 text-white/60 hover:text-white text-sm flex items-center gap-2 transition-colors cursor-pointer">
-                Close
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <button onclick="closeVideoModal()" class="absolute -top-14 right-0 text-white/40 hover:text-white text-sm flex items-center gap-2 transition-colors cursor-pointer">
+                Close <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
             <iframe id="videoFrame" src="" allow="camera; microphone; autoplay" class="bg-navy-deep"></iframe>
         </div>
     </div>
 
-    <div class="gold-sep"></div>
-
-    <!-- AGENT OVERVIEW (condensed) -->
-    <section id="agents" class="bg-cream py-24 md:py-32">
+    <!-- AGENT SUITE — warm bg with angle -->
+    <section id="agents" class="section-warm angle-top py-32 md:py-40">
         <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-16 reveal">
-                <p class="text-teal text-xs font-semibold tracking-widest uppercase mb-4">The Agent Suite</p>
-                <h2 class="font-display text-navy text-3xl md:text-5xl font-500 mb-4">Three Agents, One Platform</h2>
-                <p class="text-navy/50 max-w-lg mx-auto">Each agent is purpose-built for a specific touchpoint in the USAA member travel journey.</p>
+            <div class="text-center mb-20 reveal">
+                <p class="text-teal text-xs font-semibold tracking-[0.2em] uppercase mb-5">The Agent Suite</p>
+                <h2 class="font-body text-navy-deep text-3xl md:text-5xl font-bold tracking-tight mb-5">Three Agents, One Platform</h2>
+                <p class="text-navy-deep/40 max-w-lg mx-auto text-sm">Each agent is purpose-built for a specific touchpoint in the USAA member travel journey.</p>
             </div>
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="bg-white rounded-2xl p-8 shadow-sm border border-navy/5 reveal reveal-delay-1">
-                    <div class="w-10 h-10 rounded-lg bg-teal/10 flex items-center justify-center mb-5">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d7377" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    </div>
-                    <h3 class="text-navy font-semibold text-lg mb-2">V·SENSE Inbound</h3>
-                    <p class="text-navy/50 text-sm leading-relaxed mb-6">Handles incoming member calls — booking help, certificate inquiries, itinerary changes, complaint escalation.</p>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between"><span class="text-navy/30">Voice</span><span class="text-navy/70">Warm, professional female</span></div>
-                        <div class="flex justify-between"><span class="text-navy/30">Platform</span><span class="text-navy/70">Phone + Web</span></div>
-                        <div class="flex justify-between"><span class="text-navy/30">Max Duration</span><span class="text-navy/70">30 minutes</span></div>
-                        <div class="flex justify-between"><span class="text-navy/30">Tools</span><span class="text-navy/70">5 function calls</span></div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-2xl p-8 shadow-sm border border-navy/5 reveal reveal-delay-2">
-                    <div class="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center mb-5">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c4a35a" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="16 2 22 2 22 8"/><line x1="15" y1="9" x2="22" y2="2"/></svg>
-                    </div>
-                    <h3 class="text-navy font-semibold text-lg mb-2">V·SENSE Outbound</h3>
-                    <p class="text-navy/50 text-sm leading-relaxed mb-6">Proactive outreach — expiring certificate reminders, redemption offers, callback scheduling.</p>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between"><span class="text-navy/30">Voice</span><span class="text-navy/70">Energetic, warm female</span></div>
-                        <div class="flex justify-between"><span class="text-navy/30">Platform</span><span class="text-navy/70">Phone (outbound)</span></div>
-                        <div class="flex justify-between"><span class="text-navy/30">Voicemail</span><span class="text-navy/70">Detection + branded msg</span></div>
-                        <div class="flex justify-between"><span class="text-navy/30">Tools</span><span class="text-navy/70">5 function calls</span></div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-2xl p-8 shadow-sm border border-navy/5 reveal reveal-delay-3">
-                    <div class="w-10 h-10 rounded-lg bg-teal/10 flex items-center justify-center mb-5">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0d7377" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                    </div>
-                    <h3 class="text-navy font-semibold text-lg mb-2">V·FACE Video</h3>
-                    <p class="text-navy/50 text-sm leading-relaxed mb-6">Visual concierge — destination recommendations, cruise browsing, certificate redemption face-to-face.</p>
-                    <div class="space-y-3 text-sm">
-                        <div class="flex justify-between"><span class="text-navy/30">Avatar</span><span class="text-navy/70">USAA-branded female</span></div>
-                        <div class="flex justify-between"><span class="text-navy/30">Platform</span><span class="text-navy/70">Web embed</span></div>
-                        <div class="flex justify-between"><span class="text-navy/30">Features</span><span class="text-navy/70">Eye contact, active listening</span></div>
-                        <div class="flex justify-between"><span class="text-navy/30">Architecture</span><span class="text-navy/70">4-layer prompt + CVI</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-12 reveal">
-                <div class="bg-navy/5 border border-navy/10 rounded-xl p-6 flex flex-col md:flex-row items-start gap-6">
-                    <div class="flex items-center gap-4 shrink-0">
-                        <div class="w-8 h-8 rounded-lg bg-teal/10 flex items-center justify-center">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <!-- Bento grid -->
+            <div class="grid grid-cols-4 gap-5">
+                <div class="col-span-4 sm:col-span-2 bg-white rounded-2xl p-8 shadow-sm border border-navy-deep/[0.04] reveal reveal-delay-1 hover:-translate-y-1 transition-transform duration-500" style="border-top:3px solid var(--teal)">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="w-10 h-10 rounded-xl bg-teal/8 flex items-center justify-center">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                         </div>
-                        <p class="text-navy font-medium text-sm">Shared Infrastructure</p>
+                        <h3 class="text-navy-deep font-bold text-lg">V·SENSE Inbound</h3>
                     </div>
-                    <p class="text-navy/50 text-sm leading-relaxed">All three agents share 9 common function calls (certificate lookup, inventory search, booking, payments, escalation). White-label compliant — members only see USAA Perks branding. Dynamic variables injected per-call from CRM webhooks.</p>
+                    <p class="text-navy-deep/45 text-sm leading-relaxed mb-6">Handles incoming member calls — booking help, certificate inquiries, itinerary changes, complaint escalation.</p>
+                    <div class="space-y-2.5 text-sm">
+                        <div class="flex justify-between py-1.5 border-b border-navy-deep/[0.04]"><span class="text-navy-deep/30 flex items-center gap-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>Voice</span><span class="text-navy-deep/60">Warm, professional</span></div>
+                        <div class="flex justify-between py-1.5 border-b border-navy-deep/[0.04]"><span class="text-navy-deep/30 flex items-center gap-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Platform</span><span class="text-navy-deep/60">Phone + Web</span></div>
+                        <div class="flex justify-between py-1.5"><span class="text-navy-deep/30 flex items-center gap-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Tools</span><span class="text-navy-deep/60">5 function calls</span></div>
+                    </div>
+                </div>
+                <div class="col-span-4 sm:col-span-2 bg-white rounded-2xl p-8 shadow-sm border border-navy-deep/[0.04] reveal reveal-delay-2 hover:-translate-y-1 transition-transform duration-500" style="border-top:3px solid var(--gold)">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div class="w-10 h-10 rounded-xl bg-gold/8 flex items-center justify-center">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/><polyline points="16 2 22 2 22 8"/><line x1="15" y1="9" x2="22" y2="2"/></svg>
+                        </div>
+                        <h3 class="text-navy-deep font-bold text-lg">V·SENSE Outbound</h3>
+                    </div>
+                    <p class="text-navy-deep/45 text-sm leading-relaxed mb-6">Proactive outreach — expiring certificate reminders, redemption offers, callback scheduling.</p>
+                    <div class="space-y-2.5 text-sm">
+                        <div class="flex justify-between py-1.5 border-b border-navy-deep/[0.04]"><span class="text-navy-deep/30 flex items-center gap-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>Voice</span><span class="text-navy-deep/60">Energetic, warm</span></div>
+                        <div class="flex justify-between py-1.5 border-b border-navy-deep/[0.04]"><span class="text-navy-deep/30 flex items-center gap-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Platform</span><span class="text-navy-deep/60">Phone (outbound)</span></div>
+                        <div class="flex justify-between py-1.5"><span class="text-navy-deep/30 flex items-center gap-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Voicemail</span><span class="text-navy-deep/60">Detection + branded msg</span></div>
+                    </div>
+                </div>
+                <div class="col-span-4 bg-white rounded-2xl p-8 shadow-sm border border-navy-deep/[0.04] reveal reveal-delay-3 hover:-translate-y-1 transition-transform duration-500" style="border-top:3px solid #e07c4f">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <div class="flex items-center gap-3 mb-5">
+                                <div class="w-10 h-10 rounded-xl bg-[#e07c4f]/8 flex items-center justify-center">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e07c4f" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                                </div>
+                                <h3 class="text-navy-deep font-bold text-lg">V·FACE Video</h3>
+                            </div>
+                            <p class="text-navy-deep/45 text-sm leading-relaxed">Visual concierge — destination recommendations, cruise browsing, certificate redemption face-to-face. The most immersive agent experience in the suite.</p>
+                        </div>
+                        <div class="space-y-2.5 text-sm">
+                            <div class="flex justify-between py-1.5 border-b border-navy-deep/[0.04]"><span class="text-navy-deep/30">Avatar</span><span class="text-navy-deep/60">USAA-branded female</span></div>
+                            <div class="flex justify-between py-1.5 border-b border-navy-deep/[0.04]"><span class="text-navy-deep/30">Platform</span><span class="text-navy-deep/60">Web embed</span></div>
+                            <div class="flex justify-between py-1.5 border-b border-navy-deep/[0.04]"><span class="text-navy-deep/30">Features</span><span class="text-navy-deep/60">Eye contact, active listening</span></div>
+                            <div class="flex justify-between py-1.5"><span class="text-navy-deep/30">Architecture</span><span class="text-navy-deep/60">4-layer prompt + CVI</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 reveal reveal-delay-4">
+                <div class="bg-navy-deep/[0.03] border border-navy-deep/[0.06] rounded-xl p-6 flex flex-col md:flex-row items-start gap-5">
+                    <div class="flex items-center gap-3 shrink-0">
+                        <div class="w-9 h-9 rounded-lg bg-teal/8 flex items-center justify-center">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <p class="text-navy-deep font-semibold text-sm">Shared Infrastructure</p>
+                    </div>
+                    <p class="text-navy-deep/40 text-sm leading-relaxed">All three agents share 9 common function calls (certificate lookup, inventory search, booking, payments, escalation). White-label compliant — members only see USAA Perks branding. Dynamic variables injected per-call from CRM webhooks.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- METRICS -->
+    <section id="metrics" class="section-dark py-32 md:py-40">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-20 reveal">
+                <p class="text-gold/50 text-xs font-semibold tracking-[0.2em] uppercase mb-5">Performance Targets</p>
+                <h2 class="font-body text-white text-3xl md:text-5xl font-bold tracking-tight">Success Metrics</h2>
+            </div>
+            <!-- Primary metrics row -->
+            <div class="grid md:grid-cols-3 gap-8 mb-10 reveal reveal-delay-1">
+                <div class="text-center">
+                    <span class="badge bg-teal/8 text-teal-glow border border-teal/10 mb-4">Inbound</span>
+                    <p class="metric-counter gradient-text-gold text-6xl md:text-7xl font-bold tracking-tight my-3" data-target="80" data-prefix=">" data-suffix="%">&gt;80%</p>
+                    <div class="w-12 h-[2px] bg-gold/30 mx-auto mb-3"></div>
+                    <p class="text-white/25 text-sm">First Call Resolution</p>
+                    <p class="text-white/15 text-xs mt-1">Member issues resolved without transfer</p>
+                </div>
+                <div class="text-center">
+                    <span class="badge bg-gold/8 text-gold border border-gold/10 mb-4">Outbound</span>
+                    <p class="metric-counter gradient-text-gold text-6xl md:text-7xl font-bold tracking-tight my-3" data-target="25" data-prefix="" data-suffix="%">25%</p>
+                    <div class="w-12 h-[2px] bg-gold/30 mx-auto mb-3"></div>
+                    <p class="text-white/25 text-sm">Certificate Redemption Lift</p>
+                    <p class="text-white/15 text-xs mt-1">Increase in certificate activations</p>
+                </div>
+                <div class="text-center">
+                    <span class="badge bg-[#e07c4f]/10 text-[#e07c4f] border border-[#e07c4f]/10 mb-4">Video</span>
+                    <p class="metric-counter gradient-text-gold text-6xl md:text-7xl font-bold tracking-tight my-3" data-target="8" data-prefix=">" data-suffix="%">&gt;8%</p>
+                    <div class="w-12 h-[2px] bg-gold/30 mx-auto mb-3"></div>
+                    <p class="text-white/25 text-sm">Booking Conversion</p>
+                    <p class="text-white/15 text-xs mt-1">Visitors who complete a booking</p>
+                </div>
+            </div>
+            <!-- Secondary metrics row -->
+            <div class="grid md:grid-cols-3 gap-8 reveal reveal-delay-2">
+                <div class="text-center py-6">
+                    <p class="text-white/50 text-3xl font-bold tracking-tight mb-2">30–50%</p>
+                    <p class="text-white/20 text-sm">Call Deflection (Tier-1)</p>
+                </div>
+                <div class="text-center py-6">
+                    <p class="text-white/50 text-3xl font-bold tracking-tight mb-2">&gt;4.2 / 5.0</p>
+                    <p class="text-white/20 text-sm">CSAT Score (All Agents)</p>
+                </div>
+                <div class="text-center py-6">
+                    <p class="text-white/50 text-3xl font-bold tracking-tight mb-2">&lt;0.5%</p>
+                    <p class="text-white/20 text-sm">Guardrail Violations</p>
                 </div>
             </div>
         </div>
@@ -308,28 +662,56 @@
 
     <div class="gold-sep"></div>
 
-    <!-- METRICS + TIMELINE -->
-    <section id="metrics" class="bg-navy dot-grid py-24 md:py-32">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-16 reveal">
-                <p class="text-gold text-xs font-semibold tracking-widest uppercase mb-4">Performance Targets</p>
-                <h2 class="font-display text-white text-3xl md:text-5xl font-500 mb-4">Success Metrics</h2>
+    <!-- DEPLOYMENT TIMELINE -->
+    <section class="section-dark py-32 md:py-40">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-20 reveal">
+                <p class="text-gold/50 text-xs font-semibold tracking-[0.2em] uppercase mb-5">Rollout Plan</p>
+                <h2 class="font-body text-white text-3xl md:text-5xl font-bold tracking-tight">Three-Phase Deployment</h2>
             </div>
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-20">
-                <div class="bg-navy-light/80 border border-white/5 rounded-xl p-6 reveal"><div class="flex items-center justify-between mb-4"><p class="text-white/40 text-xs uppercase tracking-wider">First Call Resolution</p><span class="badge bg-teal/10 text-teal-light text-[10px]">Inbound</span></div><p class="text-white text-3xl font-semibold mb-2">&gt;80%</p><div class="metric-bar"><div class="metric-fill bg-teal" data-width="80"></div></div></div>
-                <div class="bg-navy-light/80 border border-white/5 rounded-xl p-6 reveal"><div class="flex items-center justify-between mb-4"><p class="text-white/40 text-xs uppercase tracking-wider">Certificate Redemption Lift</p><span class="badge bg-gold/10 text-gold text-[10px]">Outbound</span></div><p class="text-white text-3xl font-semibold mb-2">15–25%</p><div class="metric-bar"><div class="metric-fill bg-gold" data-width="70"></div></div></div>
-                <div class="bg-navy-light/80 border border-white/5 rounded-xl p-6 reveal"><div class="flex items-center justify-between mb-4"><p class="text-white/40 text-xs uppercase tracking-wider">Booking Conversion</p><span class="badge bg-teal/10 text-teal-light text-[10px]">Video</span></div><p class="text-white text-3xl font-semibold mb-2">&gt;8%</p><div class="metric-bar"><div class="metric-fill bg-teal" data-width="65"></div></div></div>
-                <div class="bg-navy-light/80 border border-white/5 rounded-xl p-6 reveal"><div class="flex items-center justify-between mb-4"><p class="text-white/40 text-xs uppercase tracking-wider">Call Deflection</p><span class="badge bg-teal/10 text-teal-light text-[10px]">Inbound</span></div><p class="text-white text-3xl font-semibold mb-2">30–50%</p><p class="text-white/25 text-xs">of Tier-1 volume</p></div>
-                <div class="bg-navy-light/80 border border-white/5 rounded-xl p-6 reveal"><div class="flex items-center justify-between mb-4"><p class="text-white/40 text-xs uppercase tracking-wider">CSAT Score</p><span class="badge bg-white/5 text-white/40 text-[10px]">All</span></div><p class="text-white text-3xl font-semibold mb-2">&gt;4.2 / 5.0</p><div class="metric-bar"><div class="metric-fill bg-gold" data-width="84"></div></div></div>
-                <div class="bg-navy-light/80 border border-white/5 rounded-xl p-6 reveal"><div class="flex items-center justify-between mb-4"><p class="text-white/40 text-xs uppercase tracking-wider">Guardrail Violations</p><span class="badge bg-white/5 text-white/40 text-[10px]">All</span></div><p class="text-white text-3xl font-semibold mb-2">&lt;0.5%</p><div class="metric-bar"><div class="metric-fill bg-green-500" data-width="95"></div></div></div>
-            </div>
-            <div class="reveal">
-                <div class="text-center mb-10"><p class="text-gold text-xs font-semibold tracking-widest uppercase mb-3">Rollout</p><h3 class="font-display text-white text-2xl font-500">Three-Phase Deployment</h3></div>
-                <div class="grid md:grid-cols-3 gap-6">
-                    <div class="bg-navy-light/50 border border-white/5 rounded-xl p-6"><div class="flex items-center gap-3 mb-4"><div class="w-8 h-8 rounded-full bg-teal/15 border border-teal/30 flex items-center justify-center text-teal text-xs font-bold">1</div><div><p class="text-white font-medium text-sm">Internal QA</p><p class="text-white/30 text-xs">Week 1</p></div></div><p class="text-white/40 text-sm">50 test calls per agent. Scored on naturalness, accuracy, and brand compliance.</p></div>
-                    <div class="bg-navy-light/50 border border-white/5 rounded-xl p-6"><div class="flex items-center gap-3 mb-4"><div class="w-8 h-8 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center text-gold text-xs font-bold">2</div><div><p class="text-white font-medium text-sm">Soft Launch</p><p class="text-white/30 text-xs">Weeks 2–3</p></div></div><p class="text-white/40 text-sm">5% inbound volume, 100 outbound seed calls, video to staging. Daily transcript review.</p></div>
-                    <div class="bg-navy-light/50 border border-white/5 rounded-xl p-6"><div class="flex items-center gap-3 mb-4"><div class="w-8 h-8 rounded-full bg-teal/15 border border-teal/30 flex items-center justify-center text-teal text-xs font-bold">3</div><div><p class="text-white font-medium text-sm">Full Deploy</p><p class="text-white/30 text-xs">Week 4+</p></div></div><p class="text-white/40 text-sm">Scale inbound to 100%. Launch outbound campaigns. Go live with video concierge.</p></div>
+            <div class="grid md:grid-cols-3 gap-8 timeline-h reveal reveal-delay-1">
+                <div class="text-center md:text-left">
+                    <div class="flex justify-center md:justify-start mb-6">
+                        <div class="timeline-node bg-teal/10 border-2 border-teal/30 text-teal-glow" style="box-shadow:0 0 20px rgba(13,115,119,0.15)">1</div>
+                    </div>
+                    <span class="badge bg-teal/8 text-teal-glow border border-teal/10 mb-3">Week 1</span>
+                    <h4 class="text-white font-bold text-lg mb-3 mt-3">Internal QA</h4>
+                    <ul class="text-white/30 text-sm space-y-2 leading-relaxed">
+                        <li>50 test calls per agent</li>
+                        <li>Naturalness & accuracy scoring</li>
+                        <li>Brand compliance review</li>
+                    </ul>
                 </div>
+                <div class="text-center md:text-left">
+                    <div class="flex justify-center md:justify-start mb-6">
+                        <div class="timeline-node bg-gold/8 border-2 border-gold/30 text-gold" style="box-shadow:0 0 20px rgba(212,175,55,0.12)">2</div>
+                    </div>
+                    <span class="badge bg-gold/8 text-gold border border-gold/10 mb-3">Weeks 2–3</span>
+                    <h4 class="text-white font-bold text-lg mb-3 mt-3">Soft Launch</h4>
+                    <ul class="text-white/30 text-sm space-y-2 leading-relaxed">
+                        <li>5% inbound volume redirect</li>
+                        <li>100 outbound seed calls</li>
+                        <li>Daily transcript review</li>
+                    </ul>
+                </div>
+                <div class="text-center md:text-left">
+                    <div class="flex justify-center md:justify-start mb-6">
+                        <div class="timeline-node bg-teal/10 border-2 border-teal/30 text-teal-glow" style="box-shadow:0 0 20px rgba(13,115,119,0.15)">3</div>
+                    </div>
+                    <span class="badge bg-teal/8 text-teal-glow border border-teal/10 mb-3">Week 4+</span>
+                    <h4 class="text-white font-bold text-lg mb-3 mt-3">Full Deploy</h4>
+                    <ul class="text-white/30 text-sm space-y-2 leading-relaxed">
+                        <li>Scale inbound to 100%</li>
+                        <li>Launch outbound campaigns</li>
+                        <li>Go live with video concierge</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center mt-16 reveal reveal-delay-2">
+                <a href="mailto:ethan@voxaris.io?subject=USAA%20Demo%20-%20Ready%20for%20Phase%201" class="btn-shimmer inline-flex items-center gap-2 bg-gold/15 text-gold font-semibold text-sm px-8 py-3.5 rounded-full border border-gold/20 hover:bg-gold/25 transition-colors">
+                    Ready to Start Phase 1?
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
             </div>
         </div>
     </section>
@@ -337,30 +719,40 @@
     <div class="gold-sep"></div>
 
     <!-- FOOTER -->
-    <footer class="bg-navy-deep py-16">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-8">
-                <div class="text-center md:text-left">
-                    <p class="text-white/60 text-sm mb-1">Prepared by <span class="text-white font-medium">Ethan</span>, Founder &amp; President</p>
-                    <p class="text-gold text-sm font-medium mb-3">Voxaris LLC</p>
-                    <p class="text-white/25 text-xs">February 2026 &nbsp;|&nbsp; Confidential</p>
-                </div>
-                <div class="text-center md:text-right">
-                    <p class="text-white/40 text-sm mb-1">ethan@voxaris.io</p>
-                    <p class="text-white/40 text-sm">voxaris.io</p>
-                </div>
+    <footer class="py-20" style="background:var(--void)">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <p class="text-white/50 text-base mb-1">Prepared by <span class="text-white font-semibold">Ethan</span>, Founder &amp; President</p>
+            <p class="text-gold text-base font-semibold mb-4">Voxaris LLC</p>
+            <div class="flex items-center justify-center gap-6 text-white/25 text-sm mb-8">
+                <span>ethan@voxaris.io</span>
+                <span class="w-1 h-1 rounded-full bg-white/15"></span>
+                <span>voxaris.io</span>
             </div>
-            <div class="mt-10 pt-6 border-t border-white/5 text-center">
-                <div class="flex items-center justify-center gap-2">
-                    <div class="w-1.5 h-1.5 rounded-full bg-gold"></div>
-                    <p class="text-white/20 text-xs tracking-wider uppercase">Powered by Voxaris</p>
-                    <div class="w-1.5 h-1.5 rounded-full bg-gold"></div>
-                </div>
+            <a href="mailto:ethan@voxaris.io?subject=USAA%20AI%20Agent%20Demo%20-%20Let's%20Talk" class="btn-shimmer inline-flex items-center gap-2 bg-gold text-navy-deep font-semibold text-sm px-8 py-3.5 rounded-full hover:bg-gold-light transition-colors mb-10" style="box-shadow:0 0 25px rgba(212,175,55,0.2)">
+                Let's Talk
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+            <div class="pt-8 border-t border-white/[0.03]">
+                <p class="text-white/10 text-[10px] tracking-[0.3em] uppercase">February 2026 &nbsp;&bull;&nbsp; Confidential &nbsp;&bull;&nbsp; Powered by Voxaris</p>
             </div>
         </div>
     </footer>
 
     <!-- SCRIPTS -->
+    <script>
+        // Tab switching
+        window.switchTab = function(agent) {
+            document.querySelectorAll('.agent-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.agent-panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`.agent-tab[data-agent="${agent}"]`).classList.add('active');
+            document.getElementById(`panel-${agent}`).classList.add('active');
+        };
+
+        // Nav scroll effect
+        window.addEventListener('scroll', () => {
+            document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 50);
+        });
+    </script>
     <script type="module">
         import { RetellWebClient } from 'https://esm.sh/retell-client-js-sdk@3';
 
@@ -463,12 +855,27 @@
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideoModal(); });
     </script>
     <script>
+        // Reveal animations + metric counters
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
-                    entry.target.querySelectorAll('.metric-fill').forEach(bar => {
-                        setTimeout(() => { bar.style.width = bar.getAttribute('data-width') + '%'; }, 200);
+                    // Count-up animation for metric numbers
+                    entry.target.querySelectorAll('.metric-counter').forEach(el => {
+                        const target = parseInt(el.dataset.target);
+                        const prefix = el.dataset.prefix || '';
+                        const suffix = el.dataset.suffix || '';
+                        let current = 0;
+                        const duration = 2000;
+                        const step = target / (duration / 16);
+                        const counter = setInterval(() => {
+                            current += step;
+                            if (current >= target) {
+                                current = target;
+                                clearInterval(counter);
+                            }
+                            el.textContent = prefix + Math.round(current) + suffix;
+                        }, 16);
                     });
                 }
             });
