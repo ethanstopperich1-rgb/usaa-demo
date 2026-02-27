@@ -873,12 +873,18 @@
                     body: JSON.stringify({ name, reason })
                 });
                 const data = await resp.json();
-                if (!data.conversation_url) throw new Error(data.error || 'No conversation URL');
-                document.getElementById('videoFrame').src = data.conversation_url;
-                document.getElementById('videoModal').classList.add('open');
+                if (!data.conversation_url) throw new Error(data.error || data.message || 'No conversation URL');
+                // Mobile: open in new tab (iframes block camera/mic on mobile Safari)
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile) {
+                    window.open(data.conversation_url, '_blank');
+                } else {
+                    document.getElementById('videoFrame').src = data.conversation_url;
+                    document.getElementById('videoModal').classList.add('open');
+                }
             } catch (err) {
                 console.error('Failed to start video:', err);
-                alert('Failed to start video session. Please try again.');
+                alert('Failed to start video session: ' + err.message);
             } finally {
                 document.getElementById('video-idle').classList.remove('hidden');
                 document.getElementById('video-connecting').classList.add('hidden');
