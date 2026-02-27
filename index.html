@@ -156,8 +156,12 @@
                         </div>
                         <h3 class="text-white font-semibold text-xl mb-1">V·SENSE Outbound</h3>
                         <p class="text-gold text-sm mb-4">Certificate Redemption</p>
-                        <p class="text-white/40 text-sm leading-relaxed mb-8">Experience the outbound call flow. The agent will pitch an expiring cruise certificate.</p>
+                        <p class="text-white/40 text-sm leading-relaxed mb-6">Experience the outbound call flow. The agent will pitch an expiring cruise certificate.</p>
                         <div id="outbound-idle">
+                            <div class="mb-4">
+                                <label class="text-white/30 text-xs uppercase tracking-wider block mb-2">Your Name</label>
+                                <input type="text" id="outbound-name" placeholder="e.g. Sarah Johnson" class="w-full bg-navy-deep/80 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-gold/40 transition-colors">
+                            </div>
                             <button onclick="startRetellCall('outbound')" class="w-full flex items-center justify-center gap-3 bg-gold/20 hover:bg-gold/30 text-gold font-semibold text-sm py-4 rounded-xl transition-colors border border-gold/20 cursor-pointer">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                                 Start Call
@@ -196,8 +200,18 @@
                         </div>
                         <h3 class="text-white font-semibold text-xl mb-1">V·FACE</h3>
                         <p class="text-gold text-sm mb-4">Video Concierge</p>
-                        <p class="text-white/40 text-sm leading-relaxed mb-8">Meet the video concierge face-to-face. Browse destinations, get recommendations, redeem certificates.</p>
+                        <p class="text-white/40 text-sm leading-relaxed mb-6">Meet the video concierge face-to-face. Browse destinations, get recommendations, redeem certificates.</p>
                         <div id="video-idle">
+                            <div class="space-y-3 mb-4">
+                                <div>
+                                    <label class="text-white/30 text-xs uppercase tracking-wider block mb-2">Your Name</label>
+                                    <input type="text" id="video-name" placeholder="e.g. Sarah Johnson" class="w-full bg-navy-deep/80 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-teal/40 transition-colors">
+                                </div>
+                                <div>
+                                    <label class="text-white/30 text-xs uppercase tracking-wider block mb-2">What brings you in?</label>
+                                    <input type="text" id="video-reason" placeholder="e.g. I want to use my cruise certificate" class="w-full bg-navy-deep/80 border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-teal/40 transition-colors">
+                                </div>
+                            </div>
                             <button onclick="startVideoSession()" class="w-full flex items-center justify-center gap-3 bg-teal hover:bg-teal-light text-white font-semibold text-sm py-4 rounded-xl transition-colors cursor-pointer">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                                 Start Video
@@ -373,7 +387,12 @@
             setCardState(agent, 'connecting');
             try {
                 const endpoint = agent === 'inbound' ? '/api/retell-inbound' : '/api/retell-outbound';
-                const resp = await fetch(endpoint, { method: 'POST' });
+                const body = {};
+                if (agent === 'outbound') {
+                    const nameEl = document.getElementById('outbound-name');
+                    if (nameEl && nameEl.value.trim()) body.name = nameEl.value.trim();
+                }
+                const resp = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
                 const data = await resp.json();
                 if (!data.access_token) throw new Error(data.error || 'No access token returned');
 
@@ -416,7 +435,13 @@
             document.getElementById('video-idle').classList.add('hidden');
             document.getElementById('video-connecting').classList.remove('hidden');
             try {
-                const resp = await fetch('/api/tavus-session', { method: 'POST' });
+                const name = document.getElementById('video-name')?.value?.trim();
+                const reason = document.getElementById('video-reason')?.value?.trim();
+                const resp = await fetch('/api/tavus-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, reason })
+                });
                 const data = await resp.json();
                 if (!data.conversation_url) throw new Error(data.error || 'No conversation URL');
                 document.getElementById('videoFrame').src = data.conversation_url;

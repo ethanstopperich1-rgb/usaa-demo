@@ -5,6 +5,8 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const { name, reason } = req.body || {};
+
   try {
     const response = await fetch('https://tavusapi.com/v2/conversations', {
       method: 'POST',
@@ -14,7 +16,11 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         persona_id: 'p29a8c3a3ca6',
-        conversation_name: 'USAA Demo - ' + new Date().toISOString()
+        conversation_name: 'USAA Demo - ' + (name || 'Guest') + ' - ' + new Date().toISOString(),
+        properties: {
+          visitor_name: name || 'there',
+          visitor_reason: reason || 'exploring travel options'
+        }
       })
     });
     const data = await response.json();
