@@ -7,6 +7,10 @@ export default async function handler(req, res) {
 
   const { name, reason } = req.body || {};
 
+  const visitorName = name || 'there';
+  const visitorReason = reason || 'exploring travel options';
+  const conversationalContext = `The visitor's name is ${visitorName}. They reached out because: ${visitorReason}. Greet them by name and acknowledge why they're reaching out.`;
+
   try {
     const response = await fetch('https://tavusapi.com/v2/conversations', {
       method: 'POST',
@@ -17,10 +21,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         persona_id: 'p29a8c3a3ca6',
         conversation_name: 'USAA Demo - ' + (name || 'Guest') + ' - ' + new Date().toISOString(),
-        properties: {
-          visitor_name: name || 'there',
-          visitor_reason: reason || 'exploring travel options'
-        }
+        conversational_context: conversationalContext
       })
     });
     const data = await response.json();

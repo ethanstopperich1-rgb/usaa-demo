@@ -289,7 +289,7 @@
     </nav>
 
     <!-- HERO -->
-    <section class="hero-aurora animated-grid relative min-h-[95vh] flex items-center justify-center">
+    <section class="hero-aurora animated-grid relative min-h-[100vh] flex items-center justify-center pt-20">
         <div class="absolute inset-0 pointer-events-none overflow-hidden" style="z-index:1">
             <div class="orb orb-teal" style="width:550px;height:550px;top:5%;left:5%;opacity:.1"></div>
             <div class="orb orb-gold" style="width:420px;height:420px;top:55%;right:0;opacity:.07"></div>
@@ -297,17 +297,17 @@
         </div>
 
         <div class="relative z-10 text-center px-6 max-w-5xl mx-auto">
-            <div class="inline-block mb-10 reveal">
+            <div class="inline-block mb-6 reveal">
                 <span class="badge border border-gold/20 text-gold/70 bg-gold/5 backdrop-blur-sm px-5 py-1.5 text-[11px]">Confidential — Demo</span>
             </div>
-            <h1 class="font-display gradient-text text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem] font-medium leading-[1.05] tracking-tight mb-8 reveal reveal-delay-1">USAA Member Travel<br>Privileges</h1>
-            <p class="font-body text-gold/50 text-sm sm:text-base tracking-[0.15em] uppercase mb-10 reveal reveal-delay-2">AI Agent Demo Experience</p>
-            <p class="text-white/40 text-base md:text-lg max-w-2xl mx-auto mb-14 leading-relaxed reveal reveal-delay-3">Three production-ready AI agents powering the complete member journey — from inbound support to proactive outreach to face-to-face video concierge.</p>
+            <h1 class="font-display gradient-text text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem] font-medium leading-[1.05] tracking-tight mb-6 reveal reveal-delay-1">USAA Member Travel<br>Privileges</h1>
+            <p class="font-body text-gold/50 text-sm sm:text-base tracking-[0.15em] uppercase mb-6 reveal reveal-delay-2">AI Agent Demo Experience</p>
+            <p class="text-white/40 text-base md:text-lg max-w-2xl mx-auto mb-10 leading-relaxed reveal reveal-delay-3">Three production-ready AI agents powering the complete member journey — from inbound support to proactive outreach to face-to-face video concierge.</p>
             <a href="#demo" class="btn-shimmer inline-flex items-center gap-3 bg-gold text-navy-deep font-semibold text-sm px-10 py-4 rounded-full hover:bg-gold-light transition-colors reveal reveal-delay-3" style="box-shadow:0 0 30px rgba(212,175,55,0.25)">
                 Try the Agents
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="chevron-bounce"><polyline points="6 9 12 15 18 9"/></svg>
             </a>
-            <p class="text-white/10 text-[10px] tracking-[0.3em] uppercase mt-16 reveal reveal-delay-4">Powered by Voxaris</p>
+            <p class="text-white/10 text-[10px] tracking-[0.3em] uppercase mt-10 reveal reveal-delay-4">Powered by Voxaris</p>
         </div>
     </section>
 
@@ -885,6 +885,11 @@
             });
         }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Immediately reveal hero elements on page load (don't wait for scroll)
+        requestAnimationFrame(() => {
+            document.querySelectorAll('.hero-aurora .reveal').forEach(el => el.classList.add('visible'));
+        });
         document.querySelectorAll('a[href^="#"]').forEach(link => {
             link.addEventListener('click', e => {
                 e.preventDefault();
