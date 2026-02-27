@@ -448,33 +448,33 @@
                                 </div>
                                 <div>
                                     <div id="outbound-idle">
-                                        <div class="mb-5">
+                                        <div class="mb-4">
                                             <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-2">Your Name</label>
                                             <input type="text" id="outbound-name" placeholder="e.g. Sarah Johnson" class="input-glass">
                                         </div>
-                                        <button onclick="startRetellCall('outbound')" class="btn-glow-gold w-full flex items-center justify-center gap-3 bg-gold/15 hover:bg-gold/25 text-gold font-semibold text-sm py-[14px] rounded-xl transition-colors border border-gold/15 cursor-pointer" style="height:52px">
+                                        <div class="mb-5">
+                                            <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-2">Your Phone Number</label>
+                                            <input type="tel" id="outbound-phone" placeholder="e.g. (555) 123-4567" class="input-glass">
+                                        </div>
+                                        <button onclick="startOutboundPhoneCall()" class="btn-glow-gold w-full flex items-center justify-center gap-3 bg-gold/15 hover:bg-gold/25 text-gold font-semibold text-sm py-[14px] rounded-xl transition-colors border border-gold/15 cursor-pointer" style="height:52px">
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                                            Start Call
+                                            Call Me
                                         </button>
                                     </div>
                                     <div id="outbound-active" class="hidden">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <div class="flex items-center gap-3">
-                                                <div class="relative"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div><div class="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-50"></div></div>
-                                                <span class="text-emerald-400 text-sm font-medium">Live</span>
-                                            </div>
-                                            <span class="text-white/30 text-sm font-mono" id="outbound-timer">0:00</span>
+                                        <div class="flex items-center justify-center gap-3 py-4">
+                                            <div class="relative"><div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div><div class="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping opacity-50"></div></div>
+                                            <span class="text-emerald-400 text-sm font-medium">Call initiated — check your phone!</span>
                                         </div>
-                                        <div class="sound-wave"><span style="--i:1"></span><span style="--i:2"></span><span style="--i:3"></span><span style="--i:4"></span><span style="--i:5"></span><span style="--i:6"></span><span style="--i:7"></span><span style="--i:8"></span><span style="--i:9"></span><span style="--i:10"></span><span style="--i:11"></span><span style="--i:12"></span></div>
-                                        <button onclick="endRetellCall('outbound')" class="w-full flex items-center justify-center gap-2 bg-red-500/15 hover:bg-red-500/25 text-red-400 font-semibold text-sm py-4 rounded-xl transition-colors border border-red-500/15 cursor-pointer" style="height:52px">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28-.79-.74-1.69-1.36-2.67-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg>
-                                            End Call
+                                        <p class="text-white/30 text-xs text-center mb-4">You'll receive a call from (321) 463-3984 momentarily.</p>
+                                        <button onclick="resetOutbound()" class="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white/50 font-medium text-sm py-3 rounded-xl transition-colors border border-white/5 cursor-pointer">
+                                            Start Over
                                         </button>
                                     </div>
                                     <div id="outbound-connecting" class="hidden">
                                         <div class="flex items-center justify-center gap-3 py-6 text-white/40 text-sm">
                                             <svg class="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                                            Connecting...
+                                            Initiating call...
                                         </div>
                                     </div>
                                 </div>
@@ -825,6 +825,40 @@
             setCardState(agent, 'idle');
             clearInterval(callTimers[agent]);
             delete retellClients[agent];
+        };
+
+        window.startOutboundPhoneCall = async function() {
+            const name = document.getElementById('outbound-name')?.value?.trim();
+            const phone = document.getElementById('outbound-phone')?.value?.trim();
+            if (!phone) { alert('Please enter your phone number.'); return; }
+            // Normalize phone: strip non-digits, prepend +1 if needed
+            let digits = phone.replace(/\D/g, '');
+            if (digits.length === 10) digits = '1' + digits;
+            if (!digits.startsWith('+')) digits = '+' + digits;
+
+            document.getElementById('outbound-idle').classList.add('hidden');
+            document.getElementById('outbound-connecting').classList.remove('hidden');
+            try {
+                const resp = await fetch('/api/retell-outbound', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone: digits })
+                });
+                const data = await resp.json();
+                if (data.error) throw new Error(data.error);
+                document.getElementById('outbound-connecting').classList.add('hidden');
+                document.getElementById('outbound-active').classList.remove('hidden');
+            } catch (err) {
+                console.error('Failed to initiate outbound call:', err);
+                document.getElementById('outbound-connecting').classList.add('hidden');
+                document.getElementById('outbound-idle').classList.remove('hidden');
+                alert('Failed to initiate call: ' + err.message);
+            }
+        };
+
+        window.resetOutbound = function() {
+            document.getElementById('outbound-active').classList.add('hidden');
+            document.getElementById('outbound-idle').classList.remove('hidden');
         };
 
         window.startVideoSession = async function() {

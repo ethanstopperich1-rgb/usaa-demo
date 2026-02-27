@@ -5,17 +5,21 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { name } = req.body || {};
+  const { name, phone } = req.body || {};
+
+  if (!phone) return res.status(400).json({ error: 'Phone number is required' });
 
   try {
-    const response = await fetch('https://api.retellai.com/v2/create-web-call', {
+    const response = await fetch('https://api.retellai.com/v2/create-phone-call', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer key_0ee2c7d7a267ad57b651666f50fe',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        agent_id: 'agent_a34129591f0e7e19abeadd264f',
+        from_number: '+13214633984',
+        to_number: phone,
+        override_agent_id: 'agent_a34129591f0e7e19abeadd264f',
         retell_llm_dynamic_variables: {
           member_name: name || 'Demo User',
           member_id: 'USAA-DEMO-001',
