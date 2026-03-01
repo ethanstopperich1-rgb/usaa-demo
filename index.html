@@ -199,6 +199,7 @@
         .agent-tab.active[data-agent="inbound"] { border-color: var(--teal); }
         .agent-tab.active[data-agent="outbound"] { border-color: var(--gold); }
         .agent-tab.active[data-agent="video"] { border-color: #e07c4f; }
+        .agent-tab.active[data-agent="booking"] { border-color: #34d399; }
         .agent-panel { display: none; animation: panelFade 0.4s ease; }
         .agent-panel.active { display: block; }
         @keyframes panelFade { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
@@ -221,6 +222,8 @@
         .input-glass:focus { border-color: rgba(212,175,55,0.35); box-shadow: 0 0 0 3px rgba(212,175,55,0.06); }
         .input-glass::placeholder { color: rgba(255,255,255,0.15); }
         .input-glass-teal:focus { border-color: rgba(13,115,119,0.4); box-shadow: 0 0 0 3px rgba(13,115,119,0.06); }
+        select.input-glass { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.25)' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 40px; cursor: pointer; }
+        select.input-glass option { background: #0F1526; color: white; }
 
         /* Gold sep */
         .gold-sep { height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.05) 20%, rgba(212,175,55,0.3) 50%, rgba(212,175,55,0.05) 80%, transparent 100%); position: relative; }
@@ -373,6 +376,12 @@
                         Video Concierge
                     </span>
                 </button>
+                <button class="agent-tab" data-agent="booking" onclick="switchTab('booking')">
+                    <span class="flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        Booking Flow
+                    </span>
+                </button>
             </div>
 
             <!-- Tab panels -->
@@ -523,6 +532,167 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Flow Panel -->
+                <div class="agent-panel" id="panel-booking">
+                    <div class="glass-card glow-border" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none">
+                        <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent opacity-40"></div>
+                        <div class="p-8 md:p-10">
+                            <!-- Step Tracker -->
+                            <div class="flex items-center justify-between mb-8 px-2">
+                                <div class="flex items-center gap-2" id="step-1-indicator">
+                                    <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-xs font-bold step-dot active">1</div>
+                                    <span class="text-white/40 text-xs hidden md:inline">Initiate</span>
+                                </div>
+                                <div class="flex-1 h-px bg-white/[0.06] mx-2"></div>
+                                <div class="flex items-center gap-2" id="step-2-indicator">
+                                    <div class="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/25 text-xs font-bold step-dot">2</div>
+                                    <span class="text-white/25 text-xs hidden md:inline">Search</span>
+                                </div>
+                                <div class="flex-1 h-px bg-white/[0.06] mx-2"></div>
+                                <div class="flex items-center gap-2" id="step-3-indicator">
+                                    <div class="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/25 text-xs font-bold step-dot">3</div>
+                                    <span class="text-white/25 text-xs hidden md:inline">Select</span>
+                                </div>
+                                <div class="flex-1 h-px bg-white/[0.06] mx-2"></div>
+                                <div class="flex items-center gap-2" id="step-4-indicator">
+                                    <div class="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/25 text-xs font-bold step-dot">4</div>
+                                    <span class="text-white/25 text-xs hidden md:inline">PURL</span>
+                                </div>
+                            </div>
+
+                            <!-- Step 1: Initiate Booking -->
+                            <div id="booking-step-1">
+                                <div class="flex items-center gap-3 mb-5">
+                                    <span class="badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/10">Step 1</span>
+                                    <h3 class="text-white font-bold text-lg">Initiate Booking</h3>
+                                </div>
+                                <p class="text-white/30 text-sm mb-5">Capture member intent — what type of travel, where, when, and how many travelers.</p>
+                                <div class="grid md:grid-cols-2 gap-4 mb-5">
+                                    <div>
+                                        <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-1.5">Member Name *</label>
+                                        <input type="text" id="bk-name" value="Sarah Johnson" class="input-glass w-full">
+                                    </div>
+                                    <div>
+                                        <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-1.5">Member ID</label>
+                                        <input type="text" id="bk-memberId" value="USAA-2847291" placeholder="Optional" class="input-glass w-full">
+                                    </div>
+                                    <div>
+                                        <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-1.5">Travel Type *</label>
+                                        <select id="bk-travelType" class="input-glass w-full">
+                                            <option value="cruise">Cruise</option>
+                                            <option value="hotel">Hotel</option>
+                                            <option value="flight">Flight</option>
+                                            <option value="vacation_package">Vacation Package</option>
+                                            <option value="car_rental">Car Rental</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-1.5">Destination</label>
+                                        <input type="text" id="bk-destination" value="Caribbean" placeholder="e.g. Caribbean, Alaska" class="input-glass w-full">
+                                    </div>
+                                    <div>
+                                        <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-1.5">Travelers</label>
+                                        <input type="number" id="bk-travelers" value="2" min="1" max="20" class="input-glass w-full">
+                                    </div>
+                                    <div>
+                                        <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-1.5">Budget</label>
+                                        <input type="text" id="bk-budget" placeholder="e.g. under $3000" class="input-glass w-full">
+                                    </div>
+                                </div>
+                                <button onclick="runBookingStep(1)" id="bk-btn-1" class="btn-glow-teal w-full flex items-center justify-center gap-3 bg-emerald-600 text-white font-semibold text-sm py-3 rounded-xl cursor-pointer">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                    initiate_booking
+                                </button>
+                            </div>
+
+                            <!-- Step 2: Search Inventory (hidden initially) -->
+                            <div id="booking-step-2" class="hidden">
+                                <div class="flex items-center gap-3 mb-5">
+                                    <span class="badge bg-teal/10 text-teal-glow border border-teal/10">Step 2</span>
+                                    <h3 class="text-white font-bold text-lg">Search Inventory</h3>
+                                </div>
+                                <p class="text-white/30 text-sm mb-5">Query available packages matching the member's preferences.</p>
+                                <button onclick="runBookingStep(2)" id="bk-btn-2" class="btn-glow-teal w-full flex items-center justify-center gap-3 bg-teal text-white font-semibold text-sm py-3 rounded-xl cursor-pointer">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                    search_inventory
+                                </button>
+                                <div id="search-results" class="hidden mt-5 space-y-3"></div>
+                            </div>
+
+                            <!-- Step 3: Select Package (hidden initially) -->
+                            <div id="booking-step-3" class="hidden">
+                                <div class="flex items-center gap-3 mb-5">
+                                    <span class="badge bg-gold/10 text-gold border border-gold/10">Step 3</span>
+                                    <h3 class="text-white font-bold text-lg">Select Package</h3>
+                                </div>
+                                <p class="text-white/30 text-sm mb-5">Lock in the member's chosen package. Select one below:</p>
+                                <div id="package-choices" class="space-y-3 mb-5"></div>
+                            </div>
+
+                            <!-- Step 4: Generate PURL (hidden initially) -->
+                            <div id="booking-step-4" class="hidden">
+                                <div class="flex items-center gap-3 mb-5">
+                                    <span class="badge bg-gold/10 text-gold-light border border-gold/10">Step 4</span>
+                                    <h3 class="text-white font-bold text-lg">Generate Personalized URL</h3>
+                                </div>
+                                <p class="text-white/30 text-sm mb-5">Create a signed booking link delivered via SMS, email, or screen.</p>
+                                <div class="grid md:grid-cols-2 gap-4 mb-5">
+                                    <div>
+                                        <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-1.5">Delivery Method</label>
+                                        <select id="bk-delivery" class="input-glass w-full">
+                                            <option value="display">Display on Screen</option>
+                                            <option value="sms">Send via SMS</option>
+                                            <option value="email">Send via Email</option>
+                                            <option value="all">All Methods</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-1.5">Email (optional)</label>
+                                        <input type="email" id="bk-email" placeholder="member@email.com" class="input-glass w-full">
+                                    </div>
+                                </div>
+                                <button onclick="runBookingStep(4)" id="bk-btn-4" class="btn-glow-gold w-full flex items-center justify-center gap-3 bg-gold/15 hover:bg-gold/25 text-gold font-semibold text-sm py-3 rounded-xl transition-colors border border-gold/15 cursor-pointer">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                    generate_purl
+                                </button>
+                            </div>
+
+                            <!-- PURL Result (hidden initially) -->
+                            <div id="booking-purl-result" class="hidden mt-5">
+                                <div class="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-6 text-center">
+                                    <div class="text-3xl mb-3">&#x1F517;</div>
+                                    <p class="text-emerald-400 text-sm font-semibold mb-2">Personalized Booking Link Generated</p>
+                                    <p class="text-white/30 text-xs mb-4" id="purl-message"></p>
+                                    <div class="bg-navy-deep/60 rounded-lg p-3 mb-4 break-all">
+                                        <a href="#" id="purl-link" target="_blank" class="text-teal-glow text-xs font-mono hover:text-teal-light transition-colors"></a>
+                                    </div>
+                                    <p class="text-white/15 text-xs">Expires: <span id="purl-expires"></span></p>
+                                </div>
+                            </div>
+
+                            <!-- Response Log -->
+                            <div class="mt-6">
+                                <button onclick="toggleResponseLog()" class="flex items-center gap-2 text-white/20 hover:text-white/40 text-xs transition-colors cursor-pointer">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                                    API Response Log
+                                    <svg id="log-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transform transition-transform"><polyline points="6 9 12 15 18 9"/></svg>
+                                </button>
+                                <div id="response-log" class="hidden mt-3 max-h-80 overflow-y-auto">
+                                    <div id="response-entries" class="space-y-2 font-mono text-[11px]"></div>
+                                </div>
+                            </div>
+
+                            <!-- Reset -->
+                            <div class="mt-5 pt-5 border-t border-white/[0.04]">
+                                <button onclick="resetBooking()" class="text-white/15 hover:text-white/30 text-xs transition-colors cursor-pointer flex items-center gap-2">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                    Reset Booking Flow
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -897,6 +1067,279 @@
         };
 
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideoModal(); });
+    </script>
+    <script>
+        // ── Booking Flow Playground ──
+        // Tracks state across the 4-step booking flow and drives the UI.
+
+        const bookingState = {
+            sessionId: null,
+            searchResults: null,
+            selectedPackageId: null,
+            selectedPackageSummary: null,
+            currentStep: 1,
+            logs: []
+        };
+
+        // Step indicator management
+        function activateStep(stepNum) {
+            for (let i = 1; i <= 4; i++) {
+                const indicator = document.getElementById(`step-${i}-indicator`);
+                if (!indicator) continue;
+                const dot = indicator.querySelector('.step-dot');
+                const label = indicator.querySelector('span');
+                if (i < stepNum) {
+                    // completed
+                    dot.className = 'w-7 h-7 rounded-full bg-emerald-500/30 border border-emerald-500/50 flex items-center justify-center text-emerald-400 text-xs font-bold step-dot';
+                    dot.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+                    if (label) label.className = 'text-emerald-400/60 text-xs hidden md:inline';
+                } else if (i === stepNum) {
+                    // active
+                    dot.className = 'w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-xs font-bold step-dot active';
+                    dot.textContent = i;
+                    if (label) label.className = 'text-white/40 text-xs hidden md:inline';
+                } else {
+                    // future
+                    dot.className = 'w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/25 text-xs font-bold step-dot';
+                    dot.textContent = i;
+                    if (label) label.className = 'text-white/25 text-xs hidden md:inline';
+                }
+            }
+        }
+
+        function showStep(stepNum) {
+            for (let i = 1; i <= 4; i++) {
+                const el = document.getElementById(`booking-step-${i}`);
+                if (el) el.classList.toggle('hidden', i !== stepNum);
+            }
+            bookingState.currentStep = stepNum;
+            activateStep(stepNum);
+        }
+
+        function addLogEntry(tool, requestBody, responseData, durationMs) {
+            const entry = { tool, request: requestBody, response: responseData, duration: durationMs, time: new Date().toISOString() };
+            bookingState.logs.push(entry);
+            const container = document.getElementById('response-entries');
+            if (!container) return;
+
+            const div = document.createElement('div');
+            div.className = 'bg-navy-deep/40 border border-white/[0.04] rounded-lg p-3 text-white/50';
+            div.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-emerald-400/70 font-semibold">${tool}</span>
+                    <span class="text-white/15">${durationMs}ms</span>
+                </div>
+                <details class="group">
+                    <summary class="cursor-pointer text-white/20 hover:text-white/40 text-[10px] uppercase tracking-wider mb-1">Request</summary>
+                    <pre class="mt-1 text-white/30 whitespace-pre-wrap break-all max-h-32 overflow-y-auto">${JSON.stringify(requestBody, null, 2)}</pre>
+                </details>
+                <details class="group mt-1">
+                    <summary class="cursor-pointer text-white/20 hover:text-white/40 text-[10px] uppercase tracking-wider mb-1">Response</summary>
+                    <pre class="mt-1 text-white/30 whitespace-pre-wrap break-all max-h-48 overflow-y-auto">${JSON.stringify(responseData, null, 2)}</pre>
+                </details>
+            `;
+            container.prepend(div);
+        }
+
+        function setButtonLoading(btnId, loading) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            if (loading) {
+                btn.dataset.originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.classList.add('opacity-60');
+                btn.innerHTML = '<svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Running...';
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-60');
+                if (btn.dataset.originalHtml) btn.innerHTML = btn.dataset.originalHtml;
+            }
+        }
+
+        async function callBookingAPI(tool, input) {
+            const start = Date.now();
+            const resp = await fetch('/api/booking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tool, input })
+            });
+            const data = await resp.json();
+            const duration = Date.now() - start;
+            addLogEntry(tool, { tool, input }, data, duration);
+            if (!resp.ok) throw new Error(data.error || `API error ${resp.status}`);
+            return data;
+        }
+
+        function renderSearchResults(results) {
+            const container = document.getElementById('search-results');
+            if (!container) return;
+            container.classList.remove('hidden');
+            container.innerHTML = results.map(pkg => `
+                <div class="bg-white/[0.02] border border-white/[0.06] rounded-xl p-5 hover:border-teal/20 transition-colors cursor-pointer group" onclick="selectPackage('${pkg.packageId}', '${pkg.name.replace(/'/g, "\\'")} — ${pkg.pricePerPerson}/pp')">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-white font-semibold text-sm">${pkg.name}</span>
+                            </div>
+                            <p class="text-white/25 text-xs">${pkg.provider} &bull; ${pkg.destination}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-gold font-bold text-lg">${pkg.pricePerPerson}</p>
+                            <p class="text-white/20 text-[10px]">per person</p>
+                        </div>
+                    </div>
+                    <p class="text-white/30 text-xs mb-3">${pkg.description}</p>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        ${pkg.highlights.map(h => `<span class="text-[10px] px-2 py-0.5 rounded-full bg-teal/8 text-teal-glow/70 border border-teal/10">${h}</span>`).join('')}
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-white/15 text-xs">${pkg.dates} &bull; ${pkg.cabinClass.replace('_', ' ')}</span>
+                        <span class="text-teal-glow text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">Click to select &rarr;</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.selectPackage = async function(packageId, summary) {
+            if (!bookingState.sessionId) return;
+            try {
+                const data = await callBookingAPI('select_package', {
+                    sessionId: bookingState.sessionId,
+                    packageId: packageId,
+                    packageSummary: summary,
+                    memberConfirmed: true
+                });
+                if (data.result?.success) {
+                    bookingState.selectedPackageId = packageId;
+                    bookingState.selectedPackageSummary = summary;
+                    showStep(4);
+                }
+            } catch (err) {
+                alert('Error selecting package: ' + err.message);
+            }
+        };
+
+        window.runBookingStep = async function(step) {
+            try {
+                if (step === 1) {
+                    setButtonLoading('bk-btn-1', true);
+                    const name = document.getElementById('bk-name')?.value?.trim();
+                    const memberId = document.getElementById('bk-memberId')?.value?.trim();
+                    const travelType = document.getElementById('bk-travelType')?.value;
+                    const destination = document.getElementById('bk-destination')?.value?.trim();
+                    const travelers = parseInt(document.getElementById('bk-travelers')?.value) || 2;
+                    const budget = document.getElementById('bk-budget')?.value?.trim();
+
+                    if (!name) { alert('Member name is required.'); setButtonLoading('bk-btn-1', false); return; }
+
+                    const data = await callBookingAPI('initiate_booking', {
+                        memberName: name,
+                        memberId: memberId || undefined,
+                        travelType,
+                        destination: destination || undefined,
+                        travelers,
+                        budgetRange: budget || undefined
+                    });
+
+                    setButtonLoading('bk-btn-1', false);
+                    if (data.result?.sessionId) {
+                        bookingState.sessionId = data.result.sessionId;
+                        showStep(2);
+                    }
+                } else if (step === 2) {
+                    setButtonLoading('bk-btn-2', true);
+                    const destination = document.getElementById('bk-destination')?.value?.trim();
+                    const travelType = document.getElementById('bk-travelType')?.value;
+                    const budget = document.getElementById('bk-budget')?.value?.trim();
+                    const maxPrice = budget ? parseInt(budget.replace(/\D/g, '')) || undefined : undefined;
+
+                    const data = await callBookingAPI('search_inventory', {
+                        sessionId: bookingState.sessionId,
+                        filters: {
+                            travelType,
+                            destination: destination || undefined,
+                            maxPrice
+                        }
+                    });
+
+                    setButtonLoading('bk-btn-2', false);
+                    if (data.result?.results) {
+                        bookingState.searchResults = data.result.results;
+                        renderSearchResults(data.result.results);
+                    }
+                } else if (step === 4) {
+                    setButtonLoading('bk-btn-4', true);
+                    const delivery = document.getElementById('bk-delivery')?.value || 'display';
+                    const email = document.getElementById('bk-email')?.value?.trim();
+
+                    const data = await callBookingAPI('generate_purl', {
+                        sessionId: bookingState.sessionId,
+                        deliveryMethod: delivery,
+                        memberEmail: email || undefined
+                    });
+
+                    setButtonLoading('bk-btn-4', false);
+                    if (data.result?.purl) {
+                        const purlResult = document.getElementById('booking-purl-result');
+                        const purlLink = document.getElementById('purl-link');
+                        const purlMsg = document.getElementById('purl-message');
+                        const purlExpires = document.getElementById('purl-expires');
+                        if (purlResult) purlResult.classList.remove('hidden');
+                        if (purlLink) {
+                            purlLink.href = data.result.purl;
+                            purlLink.textContent = data.result.purl;
+                        }
+                        if (purlMsg) purlMsg.textContent = data.result.message;
+                        if (purlExpires) purlExpires.textContent = new Date(data.result.expiresAt).toLocaleString();
+                        // Advance indicator to completed
+                        activateStep(5);
+                    }
+                }
+            } catch (err) {
+                setButtonLoading(`bk-btn-${step}`, false);
+                alert('Error: ' + err.message);
+            }
+        };
+
+        window.toggleResponseLog = function() {
+            const log = document.getElementById('response-log');
+            const chevron = document.getElementById('log-chevron');
+            if (log) log.classList.toggle('hidden');
+            if (chevron) chevron.classList.toggle('rotate-180');
+        };
+
+        window.resetBooking = function() {
+            bookingState.sessionId = null;
+            bookingState.searchResults = null;
+            bookingState.selectedPackageId = null;
+            bookingState.selectedPackageSummary = null;
+            bookingState.currentStep = 1;
+            bookingState.logs = [];
+
+            // Reset step visibility
+            showStep(1);
+
+            // Reset PURL result
+            const purlResult = document.getElementById('booking-purl-result');
+            if (purlResult) purlResult.classList.add('hidden');
+
+            // Reset search results
+            const searchResults = document.getElementById('search-results');
+            if (searchResults) { searchResults.classList.add('hidden'); searchResults.innerHTML = ''; }
+
+            // Reset package choices
+            const pkgChoices = document.getElementById('package-choices');
+            if (pkgChoices) pkgChoices.innerHTML = '';
+
+            // Reset log
+            const entries = document.getElementById('response-entries');
+            if (entries) entries.innerHTML = '';
+            const log = document.getElementById('response-log');
+            if (log) log.classList.add('hidden');
+
+            // Reset step indicators
+            activateStep(1);
+        };
     </script>
     <script>
         // Reveal animations + metric counters
