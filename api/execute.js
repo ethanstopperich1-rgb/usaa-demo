@@ -2,10 +2,14 @@
 // Receives tool calls from Tavus Raven-1 and returns results.
 // Handles booking tools with mock inventory (same as booking.js).
 //
-// Tavus sends: { conversation_id, tool_call_id, tool_name, tool_input }
-// We return:   { tool_call_id, result: { ... } }
+// POST: Tavus sends { conversation_id, tool_call_id, tool_name, tool_input }
+//       Returns: { tool_call_id, result: { ... } }
+//
+// GET:  Browser polls ?conversation_id=xxx for UI actions (PURL, search results, etc.)
+//       Returns: { actions: [...] } and clears the queue
 
 const sessions = new Map();
+const actionQueue = new Map(); // conversation_id → [{ type, data, timestamp }]
 
 const MOCK_PACKAGES = [
   {
@@ -65,14 +69,36 @@ function uuid() {
   });
 }
 
+// Push an action to the queue for the browser to pick up
+function pushAction(conversationId, type, data) {
+  if (!conversationId) return;
+  if (!actionQueue.has(conversationId)) actionQueue.set(conversationId, []);
+  actionQueue.get(conversationId).push({ type, data, timestamp: Date.now() });
+  console.log(`[execute] Queued action: ${type} for conversation ${conversationId}`);
+}
+
 export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── GET: Browser polls for UI actions ──
+  if (req.method === 'GET') {
+    const conversationId = req.query.conversation_id;
+    if (!conversationId) {
+      return res.status(400).json({ error: 'Missing conversation_id query parameter' });
+    }
+    const actions = actionQueue.get(conversationId) || [];
+    // Clear the queue after reading
+    if (actions.length > 0) actionQueue.delete(conversationId);
+    return res.json({ actions });
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // ── POST: Tavus tool call execution ──
   const { conversation_id, tool_call_id, tool_name, tool_input } = req.body || {};
 
   if (!tool_name) {
@@ -109,6 +135,15 @@ export default async function handler(req, res) {
           createdAt: new Date().toISOString()
         };
         sessions.set(sessionId, session);
+
+        // Push status update to browser
+        pushAction(conversation_id, 'booking_started', {
+          sessionId,
+          memberName,
+          travelType,
+          destination: input.destination || null,
+          travelers: input.travelers || 2
+        });
 
         result = {
           success: true,
@@ -159,6 +194,12 @@ export default async function handler(req, res) {
           provider: p.provider
         }));
 
+        // Push search results to browser
+        pushAction(conversation_id, 'search_results', {
+          resultCount: formattedResults.length,
+          results: formattedResults
+        });
+
         result = {
           success: true,
           resultCount: formattedResults.length,
@@ -186,6 +227,16 @@ export default async function handler(req, res) {
           session.selectedPackageId = input.packageId;
           session.selectedPackageSummary = input.packageSummary || (pkg ? pkg.name : input.packageId);
         }
+
+        // Push selection to browser
+        pushAction(conversation_id, 'package_selected', {
+          packageId: input.packageId,
+          name: pkg ? pkg.name : input.packageId,
+          destination: pkg?.destination,
+          pricePerPerson: pkg ? `$${pkg.pricePerPerson}` : null,
+          cabinClass: pkg?.cabinClass,
+          provider: pkg?.provider
+        });
 
         result = {
           success: true,
@@ -236,13 +287,37 @@ export default async function handler(req, res) {
           deliveryMessage = "Here's your personalized booking link. It's valid for 2 hours.";
         }
 
+        // Get selected package details for the UI
+        const selectedPkg = session?.selectedPackageId
+          ? MOCK_PACKAGES.find(p => p.packageId === session.selectedPackageId)
+          : null;
+
+        // Push PURL to browser — this triggers the booking overlay
+        pushAction(conversation_id, 'purl_ready', {
+          purl,
+          deliveryMethod,
+          message: deliveryMessage,
+          expiresAt: new Date(Date.now() + 7200000).toISOString(),
+          memberName: session?.memberName || 'Member',
+          package: selectedPkg ? {
+            name: selectedPkg.name,
+            destination: selectedPkg.destination,
+            dates: `${selectedPkg.departureDate} to ${selectedPkg.returnDate}`,
+            pricePerPerson: `$${selectedPkg.pricePerPerson.toLocaleString()}`,
+            totalPrice: `$${selectedPkg.totalPrice.toLocaleString()}`,
+            cabinClass: selectedPkg.cabinClass,
+            provider: selectedPkg.provider,
+            highlights: selectedPkg.highlights
+          } : null
+        });
+
         result = {
           success: true,
           purl,
           deliveryMethod,
           message: deliveryMessage,
           expiresAt: new Date(Date.now() + 7200000).toISOString(),
-          instruction: 'Read the delivery confirmation to the member. Let them know the link is personalized and pre-fills their cruise details. Wish them an amazing trip!'
+          instruction: 'The booking link has been displayed on the member\'s screen. Let them know they can click it to complete their booking. The link is personalized and pre-fills their cruise details. Wish them an amazing trip!'
         };
         break;
       }

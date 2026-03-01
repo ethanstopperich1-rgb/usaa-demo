@@ -266,6 +266,20 @@
         .video-modal { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; }
         .video-modal.open { display: flex; }
         .video-modal iframe { width: 90vw; max-width: 920px; height: 80vh; border-radius: 20px; border: 1px solid rgba(212,175,55,0.1); box-shadow: 0 50px 120px rgba(0,0,0,0.7); }
+        /* When overlay is visible, shrink the iframe to make room */
+        .video-modal.has-overlay iframe { width: auto; flex: 1; max-width: 700px; }
+
+        /* Booking overlay panel */
+        .booking-overlay {
+            width: 320px; min-width: 280px; max-height: 80vh; overflow-y: auto;
+            background: rgba(15,21,38,0.95); border: 1px solid rgba(13,115,119,0.15);
+            border-radius: 20px; padding: 20px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .booking-overlay.hidden { display: none; }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
 
         .badge { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
 
@@ -705,11 +719,76 @@
 
     <!-- Video Modal -->
     <div class="video-modal" id="videoModal">
-        <div class="relative">
-            <button onclick="closeVideoModal()" class="absolute -top-14 right-0 text-white/40 hover:text-white text-sm flex items-center gap-2 transition-colors cursor-pointer">
+        <div class="relative flex gap-4 items-start max-w-[1400px] w-full px-4">
+            <button onclick="closeVideoModal()" class="absolute -top-14 right-4 text-white/40 hover:text-white text-sm flex items-center gap-2 transition-colors cursor-pointer z-10">
                 Close <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
-            <iframe id="videoFrame" src="" allow="camera; microphone; autoplay" class="bg-navy-deep"></iframe>
+            <iframe id="videoFrame" src="" allow="camera; microphone; autoplay" class="bg-navy-deep flex-1"></iframe>
+
+            <!-- Booking Overlay — slides in from right when tools fire -->
+            <div id="bookingOverlay" class="booking-overlay hidden">
+                <!-- Status badge -->
+                <div id="overlayStatus" class="flex items-center gap-2 mb-4">
+                    <div class="w-2 h-2 rounded-full bg-teal animate-pulse"></div>
+                    <span class="text-teal text-[11px] font-semibold tracking-wider uppercase">Booking Active</span>
+                </div>
+
+                <!-- Step: Searching -->
+                <div id="overlay-searching" class="hidden">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-teal/10 flex items-center justify-center">
+                            <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-15.07 2.83 2.83m8.49 8.49 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.49-8.49 2.83-2.83"/></svg>
+                        </div>
+                        <div>
+                            <p class="text-white text-sm font-medium">Searching packages...</p>
+                            <p class="text-white/30 text-xs">Finding the best options for you</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step: Results -->
+                <div id="overlay-results" class="hidden">
+                    <p class="text-white/40 text-[10px] uppercase tracking-wider mb-2">Options Found</p>
+                    <div id="overlay-results-list" class="space-y-2 max-h-[40vh] overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- Step: Selected -->
+                <div id="overlay-selected" class="hidden">
+                    <div class="bg-teal/5 border border-teal/20 rounded-xl p-3 mb-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d7377" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span class="text-teal text-xs font-semibold">Package Selected</span>
+                        </div>
+                        <p id="overlay-selected-name" class="text-white text-sm font-medium"></p>
+                        <p id="overlay-selected-details" class="text-white/30 text-xs mt-1"></p>
+                    </div>
+                    <p class="text-white/25 text-xs text-center">Generating your booking link...</p>
+                </div>
+
+                <!-- Step: PURL Ready — the money shot -->
+                <div id="overlay-purl" class="hidden">
+                    <div class="text-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-teal to-teal-light mx-auto mb-3 flex items-center justify-center">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <h3 class="text-white text-lg font-bold">Booking Ready</h3>
+                        <p class="text-white/40 text-xs mt-1" id="overlay-purl-member"></p>
+                    </div>
+
+                    <!-- Package summary card -->
+                    <div class="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 mb-4">
+                        <p id="overlay-purl-pkg-name" class="text-white font-semibold text-sm mb-1"></p>
+                        <div id="overlay-purl-pkg-details" class="space-y-1 text-white/40 text-xs"></div>
+                    </div>
+
+                    <!-- CTA Button -->
+                    <a id="overlay-purl-link" href="#" target="_blank" rel="noopener"
+                       class="block w-full py-3 px-4 rounded-xl bg-gradient-to-r from-teal to-teal-light text-white font-semibold text-center text-sm hover:shadow-lg hover:shadow-teal/20 transition-all duration-300 no-underline">
+                        Complete Booking &rarr;
+                    </a>
+                    <p class="text-white/20 text-[10px] text-center mt-2" id="overlay-purl-expires">Link valid for 2 hours</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1031,6 +1110,10 @@
             document.getElementById('outbound-idle').classList.remove('hidden');
         };
 
+        // ── V·FACE Video Session + Live Booking Bridge ──
+        let activeConversationId = null;
+        let actionPollInterval = null;
+
         window.startVideoSession = async function() {
             document.getElementById('video-idle').classList.add('hidden');
             document.getElementById('video-connecting').classList.remove('hidden');
@@ -1044,6 +1127,11 @@
                 });
                 const data = await resp.json();
                 if (!data.conversation_url) throw new Error(data.error || data.message || 'No conversation URL');
+
+                // Save conversation_id for action polling
+                activeConversationId = data.conversation_id || null;
+                console.log('[vface] Conversation started:', activeConversationId);
+
                 // Mobile: open in new tab (iframes block camera/mic on mobile Safari)
                 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 if (isMobile) {
@@ -1052,6 +1140,10 @@
                     document.getElementById('videoFrame').src = data.conversation_url;
                     document.getElementById('videoModal').classList.add('open');
                 }
+
+                // Start polling for tool-triggered actions
+                if (activeConversationId) startActionPolling();
+
             } catch (err) {
                 console.error('Failed to start video:', err);
                 alert('Failed to start video session: ' + err.message);
@@ -1062,11 +1154,131 @@
         };
 
         window.closeVideoModal = function() {
+            stopActionPolling();
+            activeConversationId = null;
             document.getElementById('videoModal').classList.remove('open');
+            document.getElementById('videoModal').classList.remove('has-overlay');
             document.getElementById('videoFrame').src = '';
+            // Reset overlay
+            document.getElementById('bookingOverlay').classList.add('hidden');
+            ['overlay-searching', 'overlay-results', 'overlay-selected', 'overlay-purl'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
         };
 
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideoModal(); });
+
+        // ── Action Polling Loop ──
+        function startActionPolling() {
+            stopActionPolling(); // Clear any existing
+            console.log('[vface] Starting action polling for:', activeConversationId);
+            actionPollInterval = setInterval(pollActions, 600);
+        }
+
+        function stopActionPolling() {
+            if (actionPollInterval) {
+                clearInterval(actionPollInterval);
+                actionPollInterval = null;
+                console.log('[vface] Stopped action polling');
+            }
+        }
+
+        async function pollActions() {
+            if (!activeConversationId) return;
+            try {
+                const resp = await fetch(`/api/execute?conversation_id=${activeConversationId}`);
+                const data = await resp.json();
+                if (data.actions && data.actions.length > 0) {
+                    console.log(`[vface] Received ${data.actions.length} actions:`, data.actions);
+                    data.actions.forEach(handleAction);
+                }
+            } catch (err) {
+                // Silently ignore polling errors
+            }
+        }
+
+        // ── Action Handler — drives the booking overlay ──
+        function handleAction(action) {
+            const overlay = document.getElementById('bookingOverlay');
+            const modal = document.getElementById('videoModal');
+
+            switch (action.type) {
+                case 'booking_started': {
+                    // Show overlay with "searching" state
+                    overlay.classList.remove('hidden');
+                    modal.classList.add('has-overlay');
+                    document.getElementById('overlay-searching').classList.remove('hidden');
+                    document.getElementById('overlay-results').classList.add('hidden');
+                    document.getElementById('overlay-selected').classList.add('hidden');
+                    document.getElementById('overlay-purl').classList.add('hidden');
+                    break;
+                }
+
+                case 'search_results': {
+                    overlay.classList.remove('hidden');
+                    modal.classList.add('has-overlay');
+                    document.getElementById('overlay-searching').classList.add('hidden');
+                    document.getElementById('overlay-results').classList.remove('hidden');
+
+                    const list = document.getElementById('overlay-results-list');
+                    list.innerHTML = '';
+                    (action.data.results || []).forEach(pkg => {
+                        const card = document.createElement('div');
+                        card.className = 'bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 hover:border-teal/20 transition-colors';
+                        card.innerHTML = `
+                            <p class="text-white text-sm font-medium">${pkg.name}</p>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-white/40 text-xs">${pkg.destination}</span>
+                                <span class="text-teal font-semibold text-sm">${pkg.pricePerPerson}<span class="text-white/25 text-[10px]">/pp</span></span>
+                            </div>
+                            <p class="text-white/20 text-[10px] mt-1">${pkg.provider} · ${pkg.cabinClass.replace('_', ' ')} · ${pkg.availableSlots} left</p>
+                        `;
+                        list.appendChild(card);
+                    });
+                    break;
+                }
+
+                case 'package_selected': {
+                    overlay.classList.remove('hidden');
+                    modal.classList.add('has-overlay');
+                    document.getElementById('overlay-results').classList.add('hidden');
+                    document.getElementById('overlay-selected').classList.remove('hidden');
+                    document.getElementById('overlay-selected-name').textContent = action.data.name || 'Selected Package';
+                    document.getElementById('overlay-selected-details').textContent =
+                        [action.data.destination, action.data.pricePerPerson, action.data.provider].filter(Boolean).join(' · ');
+                    break;
+                }
+
+                case 'purl_ready': {
+                    overlay.classList.remove('hidden');
+                    modal.classList.add('has-overlay');
+                    document.getElementById('overlay-searching').classList.add('hidden');
+                    document.getElementById('overlay-results').classList.add('hidden');
+                    document.getElementById('overlay-selected').classList.add('hidden');
+                    document.getElementById('overlay-purl').classList.remove('hidden');
+
+                    const d = action.data;
+                    document.getElementById('overlay-purl-member').textContent = `For ${d.memberName}`;
+                    document.getElementById('overlay-purl-link').href = d.purl;
+
+                    if (d.package) {
+                        document.getElementById('overlay-purl-pkg-name').textContent = d.package.name;
+                        document.getElementById('overlay-purl-pkg-details').innerHTML = `
+                            <p>${d.package.destination} · ${d.package.dates}</p>
+                            <p>${d.package.provider} · ${d.package.cabinClass.replace('_', ' ')}</p>
+                            <p class="text-teal font-semibold">${d.package.pricePerPerson}/person · ${d.package.totalPrice} total</p>
+                        `;
+                    }
+
+                    const exp = d.expiresAt ? new Date(d.expiresAt) : null;
+                    if (exp) {
+                        document.getElementById('overlay-purl-expires').textContent =
+                            `Link valid until ${exp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                    }
+                    break;
+                }
+            }
+        }
     </script>
     <script>
         // ── Booking Flow Playground ──
