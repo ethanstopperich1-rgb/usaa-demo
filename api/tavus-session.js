@@ -42,7 +42,15 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         persona_id: PERSONA_ID,
         conversation_name: 'USAA Demo - ' + (name || 'Guest') + ' - ' + new Date().toISOString(),
-        conversational_context: conversationalContext
+        conversational_context: conversationalContext,
+        // Tool call callback — Raven-1 sends tool calls here
+        callback_url: 'https://usaa-demo.vercel.app/api/execute',
+        properties: {
+          max_call_duration: 1200,
+          enable_recording: true,
+          enable_transcription: true,
+          language: 'english'
+        }
       })
     });
     const data = await response.json();
