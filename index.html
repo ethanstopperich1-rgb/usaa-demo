@@ -524,16 +524,8 @@
                                 </div>
                                 <div>
                                     <div id="video-idle">
-                                        <div class="space-y-4 mb-5">
-                                            <div>
-                                                <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-2">Your Name</label>
-                                                <input type="text" id="video-name" placeholder="e.g. Sarah Johnson" class="input-glass input-glass-teal">
-                                            </div>
-                                            <div>
-                                                <label class="text-white/20 text-[11px] uppercase tracking-wider block mb-2">What brings you in?</label>
-                                                <input type="text" id="video-reason" placeholder="e.g. I want to use my cruise certificate" class="input-glass input-glass-teal">
-                                            </div>
-                                        </div>
+                                        <input type="hidden" id="video-name" value="">
+                                        <input type="hidden" id="video-reason" value="">
                                         <button onclick="startVideoSession()" class="btn-glow-teal w-full flex items-center justify-center gap-3 bg-teal text-white font-semibold text-sm py-[14px] rounded-xl cursor-pointer" style="height:52px">
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
                                             Start Video
