@@ -1007,7 +1007,13 @@
         });
     </script>
     <script type="module">
-        import { RetellWebClient } from 'https://esm.sh/retell-client-js-sdk@3';
+        let RetellWebClient;
+        try {
+            const mod = await import('https://esm.sh/retell-client-js-sdk@3');
+            RetellWebClient = mod.RetellWebClient;
+        } catch (e) {
+            console.warn('[retell] SDK failed to load — voice calls unavailable:', e.message);
+        }
 
         const retellClients = {};
         const callTimers = {};
@@ -1031,6 +1037,7 @@
         window.startRetellCall = async function(agent) {
             setCardState(agent, 'connecting');
             try {
+                if (!RetellWebClient) throw new Error('Voice SDK unavailable — please refresh and try again.');
                 const endpoint = agent === 'inbound' ? '/api/retell-inbound' : '/api/retell-outbound';
                 const body = {};
                 if (agent === 'outbound') {
@@ -1109,8 +1116,10 @@
             document.getElementById('outbound-active').classList.add('hidden');
             document.getElementById('outbound-idle').classList.remove('hidden');
         };
-
+    </script>
+    <script>
         // ── V·FACE Video Session + Live Booking Bridge ──
+        // Separate from module block so it works even if esm.sh is down
         let activeConversationId = null;
         let actionPollInterval = null;
 
