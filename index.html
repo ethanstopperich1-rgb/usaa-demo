@@ -1251,9 +1251,14 @@
                     return;
                 }
 
-                // 4. Mount Daily.co frame
+                // 4. Let Tavus provision the Daily room (brief wait)
+                console.log('[vface] Waiting for room to provision...');
+                console.log('[vface] Conversation URL:', data.conversation_url);
+                await new Promise(r => setTimeout(r, 2000));
+
+                // 5. Mount Daily.co frame
                 const container = document.getElementById('dailyContainer');
-                container.innerHTML = ''; // Clear any previous frame
+                container.innerHTML = '';
 
                 dailyCallFrame = DailyIframe.createFrame(container, {
                     showLeaveButton: false,
@@ -1267,27 +1272,57 @@
                     }
                 });
 
+                let hasJoined = false;
+
+                dailyCallFrame.on('loaded', () => {
+                    console.log('[vface] Daily iframe loaded');
+                });
+
                 dailyCallFrame.on('joined-meeting', () => {
+                    hasJoined = true;
                     console.log('[vface] Joined meeting');
                     setVfaceState('active');
                 });
 
                 dailyCallFrame.on('left-meeting', () => {
-                    console.log('[vface] Left meeting');
-                    endVideoCall();
+                    console.log('[vface] Left meeting (hasJoined:', hasJoined, ')');
+                    if (hasJoined) {
+                        endVideoCall();
+                    } else {
+                        console.warn('[vface] left-meeting fired before join — retrying in 3s...');
+                        setTimeout(async () => {
+                            try {
+                                console.log('[vface] Retrying join...');
+                                await dailyCallFrame.join({ url: data.conversation_url });
+                            } catch (retryErr) {
+                                console.error('[vface] Retry failed:', retryErr);
+                                endVideoCall();
+                            }
+                        }, 3000);
+                    }
                 });
 
                 dailyCallFrame.on('error', (err) => {
                     console.error('[vface] Daily error:', err);
-                    endVideoCall();
+                    if (hasJoined) {
+                        endVideoCall();
+                    } else {
+                        console.warn('[vface] Error before join — will try fallback');
+                        try { dailyCallFrame.destroy(); } catch(e) {}
+                        dailyCallFrame = null;
+                        container.innerHTML = `<iframe src="${data.conversation_url}" allow="camera;microphone;autoplay;display-capture" style="width:100%;height:100%;border:0;border-radius:20px"></iframe>`;
+                        hasJoined = true;
+                        setVfaceState('active');
+                    }
                 });
 
                 // Open the modal with the Daily container
                 document.getElementById('videoModal').classList.add('open');
 
                 await dailyCallFrame.join({ url: data.conversation_url });
+                console.log('[vface] dailyCallFrame.join() resolved');
 
-                // 5. Start action polling for booking overlay
+                // 6. Start action polling for booking overlay
                 if (activeConversationId) startActionPolling();
 
             } catch (err) {
