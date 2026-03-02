@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@daily-co/daily-js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -266,8 +267,20 @@
         .video-modal { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; }
         .video-modal.open { display: flex; }
         .video-modal iframe { width: 90vw; max-width: 920px; height: 80vh; border-radius: 20px; border: 1px solid rgba(212,175,55,0.1); box-shadow: 0 50px 120px rgba(0,0,0,0.7); }
-        /* When overlay is visible, shrink the iframe to make room */
-        .video-modal.has-overlay iframe { width: auto; flex: 1; max-width: 700px; }
+        /* Daily.co container */
+        .daily-container { width: 90vw; max-width: 920px; height: 80vh; border-radius: 20px; overflow: hidden; }
+        .daily-container iframe { border-radius: 20px !important; }
+
+        /* When overlay is visible, shrink the container to make room */
+        .video-modal.has-overlay .daily-container { width: auto; flex: 1; max-width: 700px; }
+
+        /* Incoming call ring animation */
+        .incoming-ring { animation: ringPulse 2s ease-in-out infinite; }
+        @keyframes ringPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(13,115,119,0.4), 0 0 20px rgba(13,115,119,0.1); border-color: rgba(13,115,119,0.3); }
+            50% { box-shadow: 0 0 0 8px rgba(13,115,119,0), 0 0 40px rgba(13,115,119,0.2); border-color: rgba(13,115,119,0.6); }
+        }
+        .incoming-ring { border: 2px solid rgba(13,115,119,0.3); }
 
         /* Booking overlay panel */
         .booking-overlay {
@@ -522,19 +535,71 @@
                                         <p class="text-white/45 text-sm italic">"Show me the best Caribbean cruise options for a couple in early spring."</p>
                                     </div>
                                 </div>
-                                <div>
-                                    <div id="video-idle">
-                                        <input type="hidden" id="video-name" value="">
-                                        <input type="hidden" id="video-reason" value="">
+                                <div id="vface-panel">
+                                    <!-- STATE: IDLE — preview video + start button -->
+                                    <div id="vface-idle">
+                                        <div class="relative rounded-2xl overflow-hidden mb-4 border border-white/[0.06] shadow-xl">
+                                            <video src="https://cdn.replica.tavus.io/40242/2fe8396c.mp4" autoplay loop muted playsinline class="w-full aspect-video object-cover"></video>
+                                        </div>
                                         <button onclick="startVideoSession()" class="btn-glow-teal w-full flex items-center justify-center gap-3 bg-teal text-white font-semibold text-sm py-[14px] rounded-xl cursor-pointer" style="height:52px">
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                                            Start Video
+                                            Start Video Call
                                         </button>
                                     </div>
-                                    <div id="video-connecting" class="hidden">
-                                        <div class="flex items-center justify-center gap-3 py-6 text-white/40 text-sm">
-                                            <svg class="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                                            Starting session...
+
+                                    <!-- STATE: INCOMING — accept/decline like FaceTime -->
+                                    <div id="vface-incoming" class="hidden">
+                                        <div class="relative rounded-2xl overflow-hidden mb-4 incoming-ring">
+                                            <video src="https://cdn.replica.tavus.io/40242/2fe8396c.mp4" autoplay loop muted playsinline class="w-full aspect-video object-cover"></video>
+                                            <div class="absolute top-3 left-3">
+                                                <div class="flex items-center gap-2 px-3 py-1.5 bg-black/60 backdrop-blur-sm rounded-full">
+                                                    <div class="w-2 h-2 rounded-full bg-teal animate-pulse"></div>
+                                                    <span class="text-[10px] font-semibold text-white tracking-wider">LIVE</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-center mb-5">
+                                            <h4 class="text-white font-bold text-lg">USAA Travel Concierge</h4>
+                                            <p class="text-teal text-xs animate-pulse mt-1">Incoming video call...</p>
+                                        </div>
+                                        <div class="flex justify-center gap-5">
+                                            <button onclick="declineVideoCall()" class="w-14 h-14 bg-white/[0.06] hover:bg-white/[0.12] rounded-full flex items-center justify-center transition-all border border-white/[0.08] cursor-pointer">
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.11 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                            </button>
+                                            <button onclick="acceptVideoCall()" class="w-14 h-14 bg-teal hover:bg-teal-light rounded-full flex items-center justify-center shadow-lg shadow-teal/30 transition-all hover:scale-105 animate-bounce cursor-pointer">
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- STATE: CONNECTING — spinner + getUserMedia -->
+                                    <div id="vface-connecting" class="hidden">
+                                        <div class="relative rounded-2xl overflow-hidden mb-4 border border-teal/20">
+                                            <video src="https://cdn.replica.tavus.io/40242/2fe8396c.mp4" autoplay loop muted playsinline class="w-full aspect-video object-cover"></video>
+                                            <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                                <div class="text-center">
+                                                    <svg class="animate-spin w-10 h-10 text-teal mx-auto mb-3" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                                    <p class="text-white font-medium text-sm">Connecting...</p>
+                                                    <p class="text-white/30 text-xs mt-1">Setting up your session</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- STATE: ACTIVE — handled by the video modal (fullscreen Daily.co) -->
+
+                                    <!-- STATE: ENDED — call finished -->
+                                    <div id="vface-ended" class="hidden">
+                                        <div class="text-center py-8">
+                                            <div class="w-16 h-16 rounded-full bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+                                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                                            </div>
+                                            <h4 class="text-white font-bold text-lg mb-1">Call Ended</h4>
+                                            <p class="text-white/35 text-sm mb-6">Thank you for trying the demo</p>
+                                            <button onclick="resetVideoCall()" class="btn-glow-teal w-full flex items-center justify-center gap-3 bg-teal text-white font-semibold text-sm py-[14px] rounded-xl cursor-pointer" style="height:52px">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                                Start New Call
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -709,13 +774,21 @@
         </div>
     </section>
 
-    <!-- Video Modal -->
+    <!-- Video Modal — Daily.co controlled frame -->
     <div class="video-modal" id="videoModal">
         <div class="relative flex gap-4 items-start max-w-[1400px] w-full px-4">
-            <button onclick="closeVideoModal()" class="absolute -top-14 right-4 text-white/40 hover:text-white text-sm flex items-center gap-2 transition-colors cursor-pointer z-10">
-                Close <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-            <iframe id="videoFrame" src="" allow="camera; microphone; autoplay" class="bg-navy-deep flex-1"></iframe>
+            <!-- Header overlay — pointer-events-none so clicks pass to Daily -->
+            <div class="pointer-events-none absolute -top-14 left-4 right-4 z-50 flex items-center justify-between">
+                <div class="flex items-center gap-2 px-4 py-2 bg-teal/20 border border-teal/30 rounded-full">
+                    <div class="w-2 h-2 rounded-full bg-teal animate-pulse"></div>
+                    <span class="text-[10px] font-bold text-white tracking-wider">LIVE</span>
+                </div>
+                <button onclick="endVideoCall()" class="pointer-events-auto text-white/40 hover:text-white text-sm flex items-center gap-2 transition-colors cursor-pointer">
+                    End Call <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <!-- Daily.co mounts its iframe here -->
+            <div id="dailyContainer" class="bg-navy-deep flex-1 daily-container"></div>
 
             <!-- Booking Overlay — slides in from right when tools fire -->
             <div id="bookingOverlay" class="booking-overlay hidden">
@@ -1110,68 +1183,157 @@
         };
     </script>
     <script>
-        // ── V·FACE Video Session + Live Booking Bridge ──
-        // Separate from module block so it works even if esm.sh is down
+        // ── V·FACE Video Session — 5-State Machine + Daily.co SDK + Booking Bridge ──
+        let vfaceState = 'idle';
         let activeConversationId = null;
         let actionPollInterval = null;
+        let dailyCallFrame = null;
 
-        window.startVideoSession = async function() {
-            document.getElementById('video-idle').classList.add('hidden');
-            document.getElementById('video-connecting').classList.remove('hidden');
+        const VFACE_STATES = ['idle', 'incoming', 'connecting', 'ended'];
+
+        function setVfaceState(newState) {
+            vfaceState = newState;
+            console.log('[vface] State →', newState);
+            // Toggle panel states
+            VFACE_STATES.forEach(s => {
+                const el = document.getElementById(`vface-${s}`);
+                if (el) el.classList.toggle('hidden', s !== newState);
+            });
+            // ACTIVE state is handled by the modal, not the panel
+            if (newState === 'active') {
+                VFACE_STATES.forEach(s => {
+                    const el = document.getElementById(`vface-${s}`);
+                    if (el) el.classList.add('hidden');
+                });
+            }
+        }
+
+        // ── IDLE → INCOMING ──
+        window.startVideoSession = function() {
+            setVfaceState('incoming');
+        };
+
+        // ── INCOMING → IDLE ──
+        window.declineVideoCall = function() {
+            setVfaceState('idle');
+        };
+
+        // ── INCOMING → CONNECTING → ACTIVE ──
+        window.acceptVideoCall = async function() {
+            setVfaceState('connecting');
             try {
-                const name = document.getElementById('video-name')?.value?.trim();
-                const reason = document.getElementById('video-reason')?.value?.trim();
+                // 1. Camera/mic permission trick — request on user gesture, then release
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    stream.getTracks().forEach(t => t.stop());
+                    console.log('[vface] Camera/mic permissions granted');
+                } catch (e) {
+                    console.warn('[vface] getUserMedia denied — Daily will handle:', e.message);
+                }
+
+                // 2. Create Tavus conversation
                 const resp = await fetch('/api/tavus-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, reason })
+                    body: JSON.stringify({})
                 });
                 const data = await resp.json();
                 if (!data.conversation_url) throw new Error(data.error || data.message || 'No conversation URL');
 
-                // Save conversation_id for action polling
                 activeConversationId = data.conversation_id || null;
-                console.log('[vface] Conversation started:', activeConversationId);
+                console.log('[vface] Conversation created:', activeConversationId);
 
-                // Mobile: open in new tab (iframes block camera/mic on mobile Safari)
+                // 3. Mobile: open in new tab (iframes block camera/mic on mobile Safari)
                 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                 if (isMobile) {
                     window.open(data.conversation_url, '_blank');
-                } else {
-                    document.getElementById('videoFrame').src = data.conversation_url;
-                    document.getElementById('videoModal').classList.add('open');
+                    setVfaceState('ended');
+                    return;
                 }
 
-                // Start polling for tool-triggered actions
+                // 4. Mount Daily.co frame
+                const container = document.getElementById('dailyContainer');
+                container.innerHTML = ''; // Clear any previous frame
+
+                dailyCallFrame = DailyIframe.createFrame(container, {
+                    showLeaveButton: false,
+                    showFullscreenButton: false,
+                    showUserNameChangeUI: false,
+                    iframeStyle: {
+                        width: '100%',
+                        height: '100%',
+                        border: '0',
+                        borderRadius: '20px',
+                    }
+                });
+
+                dailyCallFrame.on('joined-meeting', () => {
+                    console.log('[vface] Joined meeting');
+                    setVfaceState('active');
+                });
+
+                dailyCallFrame.on('left-meeting', () => {
+                    console.log('[vface] Left meeting');
+                    endVideoCall();
+                });
+
+                dailyCallFrame.on('error', (err) => {
+                    console.error('[vface] Daily error:', err);
+                    endVideoCall();
+                });
+
+                // Open the modal with the Daily container
+                document.getElementById('videoModal').classList.add('open');
+
+                await dailyCallFrame.join({ url: data.conversation_url });
+
+                // 5. Start action polling for booking overlay
                 if (activeConversationId) startActionPolling();
 
             } catch (err) {
-                console.error('Failed to start video:', err);
+                console.error('[vface] Failed to connect:', err);
                 alert('Failed to start video session: ' + err.message);
-            } finally {
-                document.getElementById('video-idle').classList.remove('hidden');
-                document.getElementById('video-connecting').classList.add('hidden');
+                setVfaceState('idle');
             }
         };
 
-        window.closeVideoModal = function() {
+        // ── ACTIVE → ENDED ──
+        window.endVideoCall = function() {
             stopActionPolling();
+            if (dailyCallFrame) {
+                try { dailyCallFrame.leave(); } catch(e) {}
+                try { dailyCallFrame.destroy(); } catch(e) {}
+                dailyCallFrame = null;
+            }
             activeConversationId = null;
             document.getElementById('videoModal').classList.remove('open');
             document.getElementById('videoModal').classList.remove('has-overlay');
-            document.getElementById('videoFrame').src = '';
-            // Reset overlay
+            // Clear Daily container
+            const container = document.getElementById('dailyContainer');
+            if (container) container.innerHTML = '';
+            // Reset booking overlay
             document.getElementById('bookingOverlay').classList.add('hidden');
             ['overlay-searching', 'overlay-results', 'overlay-selected', 'overlay-purl'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
+            setVfaceState('ended');
         };
 
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideoModal(); });
+        // ── ENDED → IDLE ──
+        window.resetVideoCall = function() {
+            setVfaceState('idle');
+        };
+
+        // Legacy alias
+        window.closeVideoModal = window.endVideoCall;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && vfaceState === 'active') endVideoCall();
+        });
 
         // ── Action Polling Loop ──
         function startActionPolling() {
-            stopActionPolling(); // Clear any existing
+            stopActionPolling();
             console.log('[vface] Starting action polling for:', activeConversationId);
             actionPollInterval = setInterval(pollActions, 600);
         }
@@ -1205,7 +1367,6 @@
 
             switch (action.type) {
                 case 'booking_started': {
-                    // Show overlay with "searching" state
                     overlay.classList.remove('hidden');
                     modal.classList.add('has-overlay');
                     document.getElementById('overlay-searching').classList.remove('hidden');
