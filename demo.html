@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USAA AI Travel Concierge — Live Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@daily-co/daily-js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { DEFAULT: '#0F1526', deep: '#0A0E1A', light: '#1A2035', mid: '#141B2D' },
+                        teal: { DEFAULT: '#0d7377', dark: '#095557', light: '#10959a', glow: '#14b8b8' },
+                        gold: { DEFAULT: '#D4AF37', light: '#E4C55A', dark: '#B8962E', glow: '#F0D060', muted: '#8B7D3C' },
+                        warm: '#F8F7F5',
+                    },
+                    fontFamily: {
+                        display: ['Newsreader', 'Georgia', 'serif'],
+                        body: ['DM Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --navy: #0F1526;
+            --navy-deep: #0A0E1A;
+            --teal: #0d7377;
+            --teal-glow: #14b8b8;
+            --gold: #D4AF37;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--navy-deep);
+            color: white;
+        }
+
+        /* ── Page Layout ── */
+        .page { display: flex; flex-direction: column; height: 100vh; }
+        .top-bar {
+            flex-shrink: 0;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            background: rgba(10,14,26,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100;
+        }
+        .main-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Ambient Background ── */
+        .ambient {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        }
+        .ambient::before {
+            content: '';
+            position: absolute;
+            width: 600px; height: 600px;
+            top: -200px; right: -100px;
+            background: radial-gradient(circle, rgba(13,115,119,0.08) 0%, transparent 70%);
+            animation: ambientDrift 20s ease-in-out infinite;
+        }
+        .ambient::after {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            bottom: -150px; left: -100px;
+            background: radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%);
+            animation: ambientDrift 25s ease-in-out infinite reverse;
+        }
+        @keyframes ambientDrift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -20px) scale(1.1); }
+        }
+
+        /* ── Center Card ── */
+        .center-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 520px;
+            padding: 0 20px;
+        }
+        .card-inner {
+            background: rgba(15,21,38,0.6);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 32px;
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            box-shadow:
+                0 40px 100px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+
+        /* ── Video Preview ── */
+        .preview-wrap {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .preview-wrap video {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* ── CTA Button ── */
+        .btn-cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 16px 24px;
+            border-radius: 14px;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: linear-gradient(135deg, #0d7377, #10959a);
+            color: white;
+            box-shadow: 0 8px 30px rgba(13,115,119,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .btn-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 40px rgba(13,115,119,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+        .btn-cta:active { transform: translateY(0); }
+
+        /* ── Prompt Chips ── */
+        .prompt-chip {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.35);
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            font-style: italic;
+            line-height: 1.4;
+        }
+
+        /* ── Incoming Call Animation ── */
+        .incoming-ring {
+            animation: ringPulse 2s ease-in-out infinite;
+            border: 2px solid rgba(13,115,119,0.3);
+        }
+        @keyframes ringPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(13,115,119,0.4), 0 0 20px rgba(13,115,119,0.1); border-color: rgba(13,115,119,0.3); }
+            50% { box-shadow: 0 0 0 10px rgba(13,115,119,0), 0 0 40px rgba(13,115,119,0.2); border-color: rgba(13,115,119,0.6); }
+        }
+
+        /* ── Call Action Buttons ── */
+        .call-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .call-btn-accept {
+            background: linear-gradient(135deg, #0d7377, #10959a);
+            box-shadow: 0 8px 30px rgba(13,115,119,0.4);
+            animation: gentleBounce 2s ease-in-out infinite;
+        }
+        .call-btn-accept:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(13,115,119,0.5); }
+        .call-btn-decline {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .call-btn-decline:hover { background: rgba(255,255,255,0.1); }
+
+        @keyframes gentleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        /* ── Active Call Area ── */
+        .call-area {
+            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            background: var(--navy-deep);
+        }
+        .call-area.active { display: flex; gap: 16px; padding: 16px; }
+
+        .call-area .daily-frame {
+            flex: 1;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
+        .call-area .daily-frame iframe { border-radius: 16px !important; }
+
+        .call-area.has-overlay .daily-frame { max-width: calc(100% - 340px); }
+
+        /* ── Call Header Overlay ── */
+        .call-header {
+            position: absolute;
+            top: 12px; left: 16px; right: 16px;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+        .call-header > * { pointer-events: auto; }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(13,115,119,0.2);
+            border: 1px solid rgba(13,115,119,0.3);
+            border-radius: 100px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #0d7377; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .end-call-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(220,53,69,0.15);
+            border: 1px solid rgba(220,53,69,0.25);
+            border-radius: 100px;
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .end-call-btn:hover {
+            background: rgba(220,53,69,0.3);
+            border-color: rgba(220,53,69,0.4);
+            color: white;
+        }
+
+        /* ── Booking Overlay ── */
+        .booking-overlay {
+            width: 320px;
+            min-width: 280px;
+            max-height: 100%;
+            overflow-y: auto;
+            background: rgba(15,21,38,0.95);
+            border: 1px solid rgba(13,115,119,0.15);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            flex-shrink: 0;
+        }
+        .booking-overlay.hidden { display: none; }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* ── Utility ── */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="ambient"></div>
+
+    <div class="page">
+        <!-- ── Top Bar ── -->
+        <div class="top-bar">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-teal to-teal-light flex items-center justify-center">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    </div>
+                    <span class="text-white font-semibold text-sm tracking-tight">USAA</span>
+                    <span class="text-white/20 text-sm">|</span>
+                    <span class="text-white/40 text-xs">AI Travel Concierge</span>
+                </div>
+            </div>
+            <a href="/" class="text-white/25 hover:text-white/50 text-xs transition-colors flex items-center gap-1.5 no-underline">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Back to overview
+            </a>
+        </div>
+
+        <!-- ── Main Area ── -->
+        <div class="main-area">
+
+            <!-- Center Card (IDLE / INCOMING / CONNECTING / ENDED) -->
+            <div class="center-card" id="centerCard">
+                <div class="card-inner">
+
+                    <!-- STATE: IDLE -->
+                    <div id="vface-idle">
+                        <div class="preview-wrap">
+                            <video src="https://cdn.replica.tavus.io/40242/2fe8396c.mp4" autoplay loop muted playsinline></video>
+                        </div>
+                        <div class="text-center mb-5">
+                            <h1 class="text-white font-bold text-xl mb-1">USAA Travel Concierge</h1>
+                            <p class="text-white/30 text-xs">AI-powered video concierge for member travel</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 justify-center mb-6">
+                            <span class="prompt-chip">"Show me Caribbean cruises for two"</span>
+                            <span class="prompt-chip">"Help me redeem my travel certificate"</span>
+                        </div>
+                        <button onclick="startVideoSession()" class="btn-cta">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            Start Video Call
+                        </button>
+                        <p class="text-white/15 text-[11px] text-center mt-4">Requires camera & microphone access. Best on desktop Chrome or Safari.</p>
+                    </div>
+
+                    <!-- STATE: INCOMING -->
+                    <div id="vface-incoming" class="hidden">
+                        <div class="preview-wrap incoming-ring">
+                            <video src="https://cdn.replica.tavus.io/40242/2fe8396c.mp4" autoplay loop muted playsinline></video>
+                            <div class="absolute top-3 left-3" style="position:absolute;top:12px;left:12px">
+                                <div style="display:flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);border-radius:100px">
+                                    <div class="live-dot"></div>
+                                    <span style="font-size:10px;font-weight:600;color:white;letter-spacing:0.08em">LIVE</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mb-6">
+                            <h2 class="text-white font-bold text-lg">USAA Travel Concierge</h2>
+                            <p style="color:var(--teal);font-size:13px;animation:pulse 2s ease-in-out infinite;margin-top:4px">Incoming video call...</p>
+                        </div>
+                        <div class="flex justify-center gap-6">
+                            <button onclick="declineVideoCall()" class="call-btn call-btn-decline">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.11 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                            </button>
+                            <button onclick="acceptVideoCall()" class="call-btn call-btn-accept">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STATE: CONNECTING -->
+                    <div id="vface-connecting" class="hidden">
+                        <div class="preview-wrap" style="border-color:rgba(13,115,119,0.2)">
+                            <video src="https://cdn.replica.tavus.io/40242/2fe8396c.mp4" autoplay loop muted playsinline></video>
+                            <div style="position:absolute;inset:0;background:rgba(0,0,0,0.65);display:flex;align-items:center;justify-content:center">
+                                <div class="text-center">
+                                    <svg class="animate-spin" style="width:44px;height:44px;color:var(--teal);margin:0 auto 16px" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                    <p class="text-white font-medium text-sm">Connecting...</p>
+                                    <p class="text-white/25 text-xs mt-1">Setting up your secure session</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STATE: ENDED -->
+                    <div id="vface-ended" class="hidden">
+                        <div class="text-center py-6">
+                            <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                            </div>
+                            <h2 class="text-white font-bold text-xl mb-2">Call Ended</h2>
+                            <p class="text-white/30 text-sm mb-8">Thank you for trying the demo</p>
+                            <button onclick="resetVideoCall()" class="btn-cta">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                Start New Call
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Active Call Area (full viewport, replaces center card) -->
+            <div class="call-area" id="callArea">
+                <div class="call-header">
+                    <div class="live-badge">
+                        <div class="live-dot"></div>
+                        <span style="font-size:10px;font-weight:700;color:white;letter-spacing:0.08em">LIVE</span>
+                    </div>
+                    <button onclick="endVideoCall()" class="end-call-btn">
+                        End Call
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                </div>
+
+                <!-- Daily.co mounts here -->
+                <div id="dailyContainer" class="daily-frame"></div>
+
+                <!-- Booking Overlay -->
+                <div id="bookingOverlay" class="booking-overlay hidden">
+                    <div id="overlayStatus" class="flex items-center gap-2 mb-4">
+                        <div class="live-dot" style="width:6px;height:6px"></div>
+                        <span style="color:var(--teal);font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase">Booking Active</span>
+                    </div>
+
+                    <!-- Searching -->
+                    <div id="overlay-searching" class="hidden">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div style="width:36px;height:36px;border-radius:10px;background:rgba(13,115,119,0.1);display:flex;align-items:center;justify-content:center">
+                                <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-15.07 2.83 2.83m8.49 8.49 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.49-8.49 2.83-2.83"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-white text-sm font-medium">Searching packages...</p>
+                                <p class="text-white/30 text-xs">Finding the best options for you</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results -->
+                    <div id="overlay-results" class="hidden">
+                        <p style="color:rgba(255,255,255,0.4);font-size:10px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Options Found</p>
+                        <div id="overlay-results-list" style="display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto;padding-right:4px"></div>
+                    </div>
+
+                    <!-- Selected -->
+                    <div id="overlay-selected" class="hidden">
+                        <div style="background:rgba(13,115,119,0.05);border:1px solid rgba(13,115,119,0.2);border-radius:12px;padding:14px;margin-bottom:12px">
+                            <div class="flex items-center gap-2" style="margin-bottom:8px">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d7377" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span style="color:var(--teal);font-size:12px;font-weight:600">Package Selected</span>
+                            </div>
+                            <p id="overlay-selected-name" class="text-white text-sm font-medium"></p>
+                            <p id="overlay-selected-details" style="color:rgba(255,255,255,0.3);font-size:12px;margin-top:4px"></p>
+                        </div>
+                        <p style="color:rgba(255,255,255,0.25);font-size:12px;text-align:center">Generating your booking link...</p>
+                    </div>
+
+                    <!-- PURL Ready -->
+                    <div id="overlay-purl" class="hidden">
+                        <div class="text-center" style="margin-bottom:16px">
+                            <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#0d7377,#10959a);margin:0 auto 14px;display:flex;align-items:center;justify-content:center">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <h3 class="text-white text-lg font-bold">Booking Ready</h3>
+                            <p id="overlay-purl-member" style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:4px"></p>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px;margin-bottom:16px">
+                            <p id="overlay-purl-pkg-name" class="text-white font-semibold text-sm" style="margin-bottom:4px"></p>
+                            <div id="overlay-purl-pkg-details" style="display:flex;flex-direction:column;gap:4px;color:rgba(255,255,255,0.4);font-size:12px"></div>
+                        </div>
+                        <a id="overlay-purl-link" href="#" target="_blank" rel="noopener"
+                           style="display:block;width:100%;padding:14px 16px;border-radius:12px;background:linear-gradient(135deg,#0d7377,#10959a);color:white;font-weight:600;text-align:center;font-size:14px;text-decoration:none;box-shadow:0 8px 30px rgba(13,115,119,0.3);transition:all 0.2s">
+                            Complete Booking &rarr;
+                        </a>
+                        <p id="overlay-purl-expires" style="color:rgba(255,255,255,0.2);font-size:10px;text-align:center;margin-top:8px">Link valid for 2 hours</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ── JavaScript ── -->
+    <script>
+        // ── V·FACE State Machine ──
+        let vfaceState = 'idle';
+        let activeConversationId = null;
+        let actionPollInterval = null;
+        let dailyCallFrame = null;
+
+        const VFACE_STATES = ['idle', 'incoming', 'connecting', 'ended'];
+
+        function setVfaceState(newState) {
+            vfaceState = newState;
+            console.log('[vface] State →', newState);
+
+            const centerCard = document.getElementById('centerCard');
+            const callArea = document.getElementById('callArea');
+
+            // Panel states (idle, incoming, connecting, ended)
+            VFACE_STATES.forEach(s => {
+                const el = document.getElementById(`vface-${s}`);
+                if (el) el.classList.toggle('hidden', s !== newState);
+            });
+
+            if (newState === 'active') {
+                // Hide center card, show call area
+                VFACE_STATES.forEach(s => {
+                    const el = document.getElementById(`vface-${s}`);
+                    if (el) el.classList.add('hidden');
+                });
+                centerCard.style.display = 'none';
+                callArea.classList.add('active');
+            } else {
+                // Show center card, hide call area
+                centerCard.style.display = '';
+                callArea.classList.remove('active');
+                callArea.classList.remove('has-overlay');
+            }
+        }
+
+        // ── IDLE → INCOMING ──
+        window.startVideoSession = function() {
+            setVfaceState('incoming');
+        };
+
+        // ── INCOMING → IDLE ──
+        window.declineVideoCall = function() {
+            setVfaceState('idle');
+        };
+
+        // ── INCOMING → CONNECTING → ACTIVE ──
+        window.acceptVideoCall = async function() {
+            setVfaceState('connecting');
+            try {
+                // 1. Camera/mic permission trick — request on user gesture, then release
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                    stream.getTracks().forEach(t => t.stop());
+                    console.log('[vface] Camera/mic permissions granted');
+                } catch (e) {
+                    console.warn('[vface] getUserMedia denied — Daily will handle:', e.message);
+                }
+
+                // 2. Create Tavus conversation
+                const resp = await fetch('/api/tavus-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await resp.json();
+                if (!data.conversation_url) throw new Error(data.error || data.message || 'No conversation URL');
+
+                activeConversationId = data.conversation_id || null;
+                console.log('[vface] Conversation created:', activeConversationId);
+
+                // 3. Mobile: open in new tab (iframes block camera/mic on mobile Safari)
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile) {
+                    window.open(data.conversation_url, '_blank');
+                    setVfaceState('ended');
+                    return;
+                }
+
+                // 4. Mount Daily.co frame
+                const container = document.getElementById('dailyContainer');
+                container.innerHTML = '';
+
+                dailyCallFrame = DailyIframe.createFrame(container, {
+                    showLeaveButton: false,
+                    showFullscreenButton: false,
+                    showUserNameChangeUI: false,
+                    iframeStyle: {
+                        width: '100%',
+                        height: '100%',
+                        border: '0',
+                        borderRadius: '16px',
+                    }
+                });
+
+                dailyCallFrame.on('joined-meeting', () => {
+                    console.log('[vface] Joined meeting');
+                    setVfaceState('active');
+                });
+
+                dailyCallFrame.on('left-meeting', () => {
+                    console.log('[vface] Left meeting');
+                    endVideoCall();
+                });
+
+                dailyCallFrame.on('error', (err) => {
+                    console.error('[vface] Daily error:', err);
+                    endVideoCall();
+                });
+
+                await dailyCallFrame.join({ url: data.conversation_url });
+
+                // 5. Start action polling for booking overlay
+                if (activeConversationId) startActionPolling();
+
+            } catch (err) {
+                console.error('[vface] Failed to connect:', err);
+                alert('Failed to start video session: ' + err.message);
+                setVfaceState('idle');
+            }
+        };
+
+        // ── ACTIVE → ENDED ──
+        window.endVideoCall = function() {
+            stopActionPolling();
+            if (dailyCallFrame) {
+                try { dailyCallFrame.leave(); } catch(e) {}
+                try { dailyCallFrame.destroy(); } catch(e) {}
+                dailyCallFrame = null;
+            }
+            activeConversationId = null;
+            // Clear Daily container
+            const container = document.getElementById('dailyContainer');
+            if (container) container.innerHTML = '';
+            // Reset booking overlay
+            document.getElementById('bookingOverlay').classList.add('hidden');
+            ['overlay-searching', 'overlay-results', 'overlay-selected', 'overlay-purl'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            setVfaceState('ended');
+        };
+
+        // ── ENDED → IDLE ──
+        window.resetVideoCall = function() {
+            setVfaceState('idle');
+        };
+
+        // Escape key to end call
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && vfaceState === 'active') endVideoCall();
+        });
+
+        // ── Action Polling Loop ──
+        function startActionPolling() {
+            stopActionPolling();
+            console.log('[vface] Starting action polling for:', activeConversationId);
+            actionPollInterval = setInterval(pollActions, 600);
+        }
+
+        function stopActionPolling() {
+            if (actionPollInterval) {
+                clearInterval(actionPollInterval);
+                actionPollInterval = null;
+                console.log('[vface] Stopped action polling');
+            }
+        }
+
+        async function pollActions() {
+            if (!activeConversationId) return;
+            try {
+                const resp = await fetch(`/api/execute?conversation_id=${activeConversationId}`);
+                const data = await resp.json();
+                if (data.actions && data.actions.length > 0) {
+                    console.log(`[vface] Received ${data.actions.length} actions:`, data.actions);
+                    data.actions.forEach(handleAction);
+                }
+            } catch (err) {
+                // Silently ignore polling errors
+            }
+        }
+
+        // ── Action Handler — drives the booking overlay ──
+        function handleAction(action) {
+            const overlay = document.getElementById('bookingOverlay');
+            const callArea = document.getElementById('callArea');
+
+            switch (action.type) {
+                case 'booking_started': {
+                    overlay.classList.remove('hidden');
+                    callArea.classList.add('has-overlay');
+                    document.getElementById('overlay-searching').classList.remove('hidden');
+                    document.getElementById('overlay-results').classList.add('hidden');
+                    document.getElementById('overlay-selected').classList.add('hidden');
+                    document.getElementById('overlay-purl').classList.add('hidden');
+                    break;
+                }
+
+                case 'search_results': {
+                    overlay.classList.remove('hidden');
+                    callArea.classList.add('has-overlay');
+                    document.getElementById('overlay-searching').classList.add('hidden');
+                    document.getElementById('overlay-results').classList.remove('hidden');
+
+                    const list = document.getElementById('overlay-results-list');
+                    list.innerHTML = '';
+                    (action.data.results || []).forEach(pkg => {
+                        const card = document.createElement('div');
+                        card.style.cssText = 'background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;transition:border-color 0.2s';
+                        card.onmouseenter = () => card.style.borderColor = 'rgba(13,115,119,0.2)';
+                        card.onmouseleave = () => card.style.borderColor = 'rgba(255,255,255,0.06)';
+                        card.innerHTML = `
+                            <p class="text-white text-sm font-medium">${pkg.name}</p>
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+                                <span style="color:rgba(255,255,255,0.4);font-size:12px">${pkg.destination}</span>
+                                <span style="color:var(--teal);font-weight:600;font-size:14px">${pkg.pricePerPerson}<span style="color:rgba(255,255,255,0.25);font-size:10px">/pp</span></span>
+                            </div>
+                            <p style="color:rgba(255,255,255,0.2);font-size:10px;margin-top:4px">${pkg.provider} · ${pkg.cabinClass.replace('_', ' ')} · ${pkg.availableSlots} left</p>
+                        `;
+                        list.appendChild(card);
+                    });
+                    break;
+                }
+
+                case 'package_selected': {
+                    overlay.classList.remove('hidden');
+                    callArea.classList.add('has-overlay');
+                    document.getElementById('overlay-results').classList.add('hidden');
+                    document.getElementById('overlay-selected').classList.remove('hidden');
+                    document.getElementById('overlay-selected-name').textContent = action.data.name || 'Selected Package';
+                    document.getElementById('overlay-selected-details').textContent =
+                        [action.data.destination, action.data.pricePerPerson, action.data.provider].filter(Boolean).join(' · ');
+                    break;
+                }
+
+                case 'purl_ready': {
+                    overlay.classList.remove('hidden');
+                    callArea.classList.add('has-overlay');
+                    document.getElementById('overlay-searching').classList.add('hidden');
+                    document.getElementById('overlay-results').classList.add('hidden');
+                    document.getElementById('overlay-selected').classList.add('hidden');
+                    document.getElementById('overlay-purl').classList.remove('hidden');
+
+                    const d = action.data;
+                    document.getElementById('overlay-purl-member').textContent = `For ${d.memberName}`;
+                    document.getElementById('overlay-purl-link').href = d.purl;
+
+                    if (d.package) {
+                        document.getElementById('overlay-purl-pkg-name').textContent = d.package.name;
+                        document.getElementById('overlay-purl-pkg-details').innerHTML = `
+                            <p>${d.package.destination} · ${d.package.dates}</p>
+                            <p>${d.package.provider} · ${d.package.cabinClass.replace('_', ' ')}</p>
+                            <p style="color:var(--teal);font-weight:600">${d.package.pricePerPerson}/person · ${d.package.totalPrice} total</p>
+                        `;
+                    }
+
+                    const exp = d.expiresAt ? new Date(d.expiresAt) : null;
+                    if (exp) {
+                        document.getElementById('overlay-purl-expires').textContent =
+                            `Link valid until ${exp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                    }
+                    break;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
