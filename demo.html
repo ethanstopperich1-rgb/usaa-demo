@@ -419,6 +419,15 @@
                     </button>
                 </div>
 
+                <!-- Connecting overlay (shown while Daily loads, hidden when joined) -->
+                <div id="connectingOverlay" style="position:absolute;inset:0;z-index:25;background:var(--navy-deep);display:none;align-items:center;justify-content:center">
+                    <div class="text-center">
+                        <svg class="animate-spin" style="width:48px;height:48px;color:var(--teal);margin:0 auto 20px" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.2"/><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        <p class="text-white font-medium text-base">Connecting...</p>
+                        <p style="color:rgba(255,255,255,0.25);font-size:13px;margin-top:6px">Setting up your secure session</p>
+                    </div>
+                </div>
+
                 <!-- Daily.co mounts here -->
                 <div id="dailyContainer" class="daily-frame"></div>
 
@@ -502,6 +511,7 @@
 
             const centerCard = document.getElementById('centerCard');
             const callArea = document.getElementById('callArea');
+            const connectOverlay = document.getElementById('connectingOverlay');
 
             // Panel states (idle, incoming, connecting, ended)
             VFACE_STATES.forEach(s => {
@@ -509,19 +519,26 @@
                 if (el) el.classList.toggle('hidden', s !== newState);
             });
 
-            if (newState === 'active') {
-                // Hide center card, show call area
+            if (newState === 'connecting') {
+                // Show call area with connecting overlay so Daily has a visible container to mount into
                 VFACE_STATES.forEach(s => {
                     const el = document.getElementById(`vface-${s}`);
                     if (el) el.classList.add('hidden');
                 });
                 centerCard.style.display = 'none';
                 callArea.classList.add('active');
+                if (connectOverlay) connectOverlay.style.display = 'flex';
+            } else if (newState === 'active') {
+                // Hide connecting overlay, keep call area visible
+                centerCard.style.display = 'none';
+                callArea.classList.add('active');
+                if (connectOverlay) connectOverlay.style.display = 'none';
             } else {
                 // Show center card, hide call area
                 centerCard.style.display = '';
                 callArea.classList.remove('active');
                 callArea.classList.remove('has-overlay');
+                if (connectOverlay) connectOverlay.style.display = 'none';
             }
         }
 
